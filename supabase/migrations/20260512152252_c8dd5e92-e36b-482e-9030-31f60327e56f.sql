@@ -1,0 +1,1 @@
+ALTER TABLE public.invites ADD COLUMN IF NOT EXISTS store_name TEXT NOT NULL DEFAULT '';

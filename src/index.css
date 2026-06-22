@@ -1,0 +1,239 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Garage · Black & Gold
+       Tema escuro premium com acentos dourados para marketplace de veículos.
+       Champagne gold + laranja tropical + esmeralda sobre charcoal profundo. */
+
+    /* Premium SaaS — Black & Gold
+       Base #0a0a0a · Surfaces #111111 · Borders #222222
+       Accent: Champagne Gold #D4AF37 · Conversão: WhatsApp Green #25D366 */
+
+    --background: 0 0% 4%;               /* #0a0a0a */
+    --foreground: 0 0% 100%;             /* #ffffff */
+
+    --card: 0 0% 7%;                     /* #111111 */
+    --card-foreground: 0 0% 100%;
+
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 100%;
+
+    /* Primary = champagne gold #D4AF37 */
+    --primary: 46 65% 52%;
+    --primary-foreground: 0 0% 6%;
+    --primary-glow: 46 71% 62%;          /* #E5C158 hover */
+
+    --secondary: 0 0% 11%;               /* #1c1c1c */
+    --secondary-foreground: 0 0% 100%;
+
+    --muted: 0 0% 9%;
+    --muted-foreground: 0 0% 63%;        /* #a0a0a0 */
+
+    --accent: 46 65% 52%;
+    --accent-foreground: 0 0% 6%;
+
+    --rose-gold: 46 65% 52%;
+    --rose-gold-soft: 46 71% 62%;
+
+    --destructive: 0 72% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 13%;                  /* #222222 */
+    --input: 0 0% 9%;
+    --ring: 46 65% 52%;
+
+    --radius: 0.875rem;
+
+    /* Acentos auxiliares (mantidos por compatibilidade, sem uso decorativo) */
+    --tropical-orange: 46 65% 52%;
+    --emerald: 142 71% 49%;
+    --turquoise: 46 65% 52%;
+
+    --gold: 46 65% 52%;
+    --silver: 0 0% 75%;
+    --bronze: 46 65% 52%;
+
+    /* Verde WhatsApp #25D366 — exclusivo para CTA de WhatsApp */
+    --whatsapp: 142 70% 49%;
+
+    /* Sem gradientes fortes — superfícies sólidas elegantes */
+    --gradient-primary: linear-gradient(135deg, hsl(46 65% 52%) 0%, hsl(46 71% 62%) 100%);
+    --gradient-rose: linear-gradient(135deg, hsl(46 65% 52%) 0%, hsl(46 71% 62%) 100%);
+    --gradient-tropical: linear-gradient(135deg, hsl(46 65% 52%) 0%, hsl(46 71% 62%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 8%) 0%, hsl(0 0% 6%) 100%);
+    --gradient-aurora: linear-gradient(135deg, hsl(0 0% 6%) 0%, hsl(0 0% 4%) 100%);
+
+    --shadow-card: 0 4px 18px -6px hsl(0 0% 0% / 0.6), 0 0 0 1px hsl(0 0% 13%);
+    --shadow-elev: 0 24px 50px -20px hsl(0 0% 0% / 0.8), 0 8px 18px -10px hsl(0 0% 0% / 0.5);
+    --shadow-glow-rose: 0 0 24px hsl(46 65% 52% / 0.35);
+    --shadow-glow-primary: 0 0 24px hsl(46 65% 52% / 0.4);
+
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Brand colors do corretor — sobrescritas em runtime via useBrandColors */
+    --brand-primary: #D4AF37;
+    --brand-accent: #D4AF37;
+  }
+  }
+
+  /* ============================================================
+     Temas da loja (aplicados apenas em páginas públicas via
+     [data-store-theme] no <html>, setado por useBrandColors).
+     Não afetam o painel administrativo.
+     ============================================================ */
+
+  :root[data-store-theme="claro"] {
+    --background: 0 0% 100%;
+    --foreground: 222 14% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 14% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 14% 14%;
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 222 14% 14%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 40%;
+    --border: 220 13% 88%;
+    --input: 220 13% 92%;
+    --shadow-card: 0 4px 18px -6px hsl(0 0% 0% / 0.12), 0 0 0 1px hsl(220 13% 88%);
+    --shadow-elev: 0 24px 50px -20px hsl(0 0% 0% / 0.18), 0 8px 18px -10px hsl(0 0% 0% / 0.10);
+  }
+
+  :root[data-store-theme="vibrante"] {
+    --background: 222 47% 8%;
+    --foreground: 0 0% 100%;
+    --card: 222 40% 13%;
+    --card-foreground: 0 0% 100%;
+    --popover: 222 40% 11%;
+    --popover-foreground: 0 0% 100%;
+    --secondary: 222 30% 18%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 222 28% 16%;
+    --muted-foreground: 220 14% 78%;
+    --border: 222 28% 22%;
+    --input: 222 28% 18%;
+  }
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html, body, #root {
+    height: 100%;
+  }
+
+  body {
+    @apply text-foreground antialiased;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background-color: #0a0a0a;
+    background-image: none;
+    background-attachment: fixed;
+    min-height: 100vh;
+  }
+
+  /* Tipografia da marca — serifada elegante para títulos hero */
+  .font-display {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-feature-settings: "liga" 1, "kern" 1;
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer utilities {
+  .app-shell {
+    @apply mx-auto w-full max-w-[480px] min-h-screen relative;
+    background-color: #0a0a0a;
+  }
+  .safe-bottom {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 5rem);
+  }
+  .text-gradient-primary {
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .text-gradient-rose {
+    background: var(--gradient-rose);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* Glassmorphism — superfícies com borda accent do corretor a 20% */
+  .glass {
+    background: hsl(0 0% 5% / 0.72);
+    backdrop-filter: blur(20px) saturate(150%);
+    -webkit-backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid color-mix(in srgb, var(--brand-accent) 20%, transparent);
+  }
+  .glass-strong {
+    background: hsl(0 0% 3% / 0.9);
+    backdrop-filter: blur(28px) saturate(170%);
+    -webkit-backdrop-filter: blur(28px) saturate(170%);
+    border: 1px solid color-mix(in srgb, var(--brand-accent) 22%, transparent);
+  }
+  .glass-card {
+    background: linear-gradient(180deg, hsl(30 6% 11% / 0.88) 0%, hsl(0 0% 5% / 0.92) 100%);
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    border: 1px solid color-mix(in srgb, var(--brand-accent) 20%, transparent);
+  }
+
+  /* Glow dos botões principais — usa a cor primária do corretor */
+  .glow-primary {
+    box-shadow:
+      0 0 28px color-mix(in srgb, var(--brand-primary) 55%, transparent),
+      0 8px 24px -8px color-mix(in srgb, var(--brand-primary) 45%, transparent);
+  }
+  .glow-rose {
+    box-shadow:
+      0 0 28px color-mix(in srgb, var(--brand-accent) 50%, transparent),
+      0 8px 22px -10px color-mix(in srgb, var(--brand-accent) 40%, transparent);
+  }
+
+  /* Brilho sutil rosê em hover/active */
+  .hover-glow-rose {
+    transition: box-shadow 220ms ease, transform 220ms ease, filter 220ms ease;
+  }
+  .hover-glow-rose:hover {
+    box-shadow: 0 0 24px hsl(var(--rose-gold) / 0.45);
+    filter: brightness(1.05);
+  }
+  .hover-glow-rose:active {
+    box-shadow: 0 0 14px hsl(var(--rose-gold) / 0.35);
+    transform: translateY(1px);
+  }
+
+  /* Brand colors utilities — usam variáveis CSS injetadas pelo useBrandColors */
+  .bg-brand-primary { background-color: var(--brand-primary); }
+  .bg-brand-accent  { background-color: var(--brand-accent); }
+  .text-brand-primary { color: var(--brand-primary); }
+  .text-brand-accent  { color: var(--brand-accent); }
+  .border-brand-primary { border-color: var(--brand-primary); }
+  .border-brand-accent  { border-color: var(--brand-accent); }
+
+  /* Aliases legados (bg-marsala -> brand-primary, text-roseGold -> brand-accent) */
+  .bg-marsala { background-color: var(--brand-primary); }
+  .text-roseGold { color: var(--brand-accent); }
+  .border-roseGold { border-color: var(--brand-accent); }
+}
+
+/* Heart pop — animação ao favoritar */
+@keyframes heart-pop {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.45); }
+  55%  { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}

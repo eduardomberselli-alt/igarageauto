@@ -1,0 +1,4 @@
+ALTER TABLE public.properties
+  ADD COLUMN year INTEGER,
+  ADD COLUMN km INTEGER,
+  ADD COLUMN city TEXT;

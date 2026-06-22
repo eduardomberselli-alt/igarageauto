@@ -1,0 +1,2 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS brand_primary_color TEXT NOT NULL DEFAULT '#722F37';
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS brand_accent_color TEXT NOT NULL DEFAULT '#D4AF37';
