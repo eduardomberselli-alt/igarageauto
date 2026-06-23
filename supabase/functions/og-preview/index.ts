@@ -17,13 +17,10 @@ const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 // URL pública da app (onde o usuário humano vai parar)
 const APP_BASE_URL = "https://garage.app";
 
-// Imagem oficial da marca Garage.
-// Hospedada no bucket público `avatars` para garantir URL absoluta + acessível
-// por crawlers (WhatsApp, Facebook, etc.) sem depender do deploy do front.
-const BRAND_OG_IMAGE =
-  "https://egnvjqhwhhqsnlkkfmzl.supabase.co/storage/v1/object/public/avatars/brand/og-emly.jpg?v=3";
-
-// Fallback genérico (mesma imagem da marca).
+// Endpoint que gera dinamicamente a imagem OG padronizada Garage.
+const OG_IMAGE_ENDPOINT = `${SUPABASE_URL}/functions/v1/og-image`;
+// Imagem institucional (cartão da marca, sem parâmetros).
+const BRAND_OG_IMAGE = OG_IMAGE_ENDPOINT;
 const DEFAULT_OG_IMAGE = BRAND_OG_IMAGE;
 
 const corsHeaders = {
@@ -55,6 +52,13 @@ function withVersion(url: string, version: string | null | undefined): string {
   return `${url}${sep}v=${encodeURIComponent(version)}`;
 }
 
+function ogStoreImage(slug: string, version?: string | null): string {
+  return withVersion(`${OG_IMAGE_ENDPOINT}?store=${encodeURIComponent(slug)}`, version);
+}
+function ogVehicleImage(idOrSlug: string, version?: string | null): string {
+  return withVersion(`${OG_IMAGE_ENDPOINT}?vehicle=${encodeURIComponent(idOrSlug)}`, version);
+}
+
 function buildHtml(args: {
   title: string;
   description: string;
@@ -83,7 +87,7 @@ function buildHtml(args: {
     <meta property="og:description" content="${safeDesc}" />
     <meta property="og:image" content="${safeImg}" />
     <meta property="og:image:secure_url" content="${safeImg}" />
-    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:type" content="image/png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="${safeTitle}" />
@@ -118,12 +122,6 @@ async function computeBadge(
   if (total >= 10) return "MASTER";
   if (total >= 5) return "EXPERT";
   return "SELECT";
-}
-
-/** Garante URL absoluta + cache-buster. Retorna fallback se inválida. */
-function ensureAbsoluteImage(url: string | null | undefined, version?: string | null): string {
-  if (!url || !/^https?:\/\//i.test(url)) return DEFAULT_OG_IMAGE;
-  return withVersion(url, version);
 }
 
 Deno.serve(async (req) => {
@@ -173,7 +171,7 @@ Deno.serve(async (req) => {
       if (inv?.inviter_id && inv.status === "pending") {
         const { data: prof } = await client
           .from("profiles")
-          .select("nome, foto_url, updated_at")
+          .select("nome, slug, updated_at")
           .eq("user_id", inv.inviter_id)
           .maybeSingle();
 
@@ -181,7 +179,9 @@ Deno.serve(async (req) => {
         const nome = prof?.nome?.trim() || "Corretor";
         title = `${nome} — Garage`;
         description = `Selo ${badge} · ${nome} está te convidando para a Garage, plataforma boutique de lojistas. É gratuito.`;
-        image = ensureAbsoluteImage(prof?.foto_url, prof?.updated_at);
+        image = prof?.slug
+          ? ogStoreImage(prof.slug, prof.updated_at)
+          : BRAND_OG_IMAGE;
       } else {
         title = "Convite — Garage";
         description = "Cadastre-se com um código de convite e ganhe acesso à plataforma boutique.";
@@ -194,15 +194,15 @@ Deno.serve(async (req) => {
     else if (slug) {
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
       const profQuery = isUuid
-        ? client.from("profiles").select("user_id, nome, foto_url, updated_at").eq("user_id", slug)
-        : client.from("profiles").select("user_id, nome, foto_url, updated_at").eq("slug", slug);
+        ? client.from("profiles").select("user_id, nome, slug, updated_at").eq("user_id", slug)
+        : client.from("profiles").select("user_id, nome, slug, updated_at").eq("slug", slug);
       const { data: prof } = await profQuery.maybeSingle();
 
       if (prof?.user_id) {
         const nome = prof.nome?.trim() || "Loja parceira";
         title = nome;
         description = "Confira nosso estoque e fale com a nossa equipe.";
-        image = ensureAbsoluteImage(prof.foto_url, prof.updated_at);
+        image = ogStoreImage(prof.slug ?? slug, prof.updated_at);
       }
       canonical = `${APP_BASE_URL}/p/${encodeURIComponent(slug)}`;
       redirect = canonical;
@@ -214,20 +214,18 @@ Deno.serve(async (req) => {
       const propQuery = isUuid
         ? client
             .from("properties")
-            .select("titulo, preco, foto_url, fotos_urls, owner_id, updated_at, slug")
+            .select("id, titulo, preco, owner_id, updated_at, slug")
             .eq("id", imovelId)
         : client
             .from("properties")
-            .select("titulo, preco, foto_url, fotos_urls, owner_id, updated_at, slug")
+            .select("id, titulo, preco, owner_id, updated_at, slug")
             .eq("slug", imovelId);
       const { data: prop } = await propQuery.maybeSingle();
 
       if (prop) {
-        const fotos = (prop.fotos_urls as string[] | null) ?? [];
-        const propImg = prop.foto_url || fotos[0] || null;
         const { data: prof } = await client
           .from("profiles")
-          .select("nome, slug, foto_url, updated_at")
+          .select("nome, slug, updated_at")
           .eq("user_id", prop.owner_id)
           .maybeSingle();
         const nome = prof?.nome?.trim() || "Loja parceira";
@@ -238,7 +236,7 @@ Deno.serve(async (req) => {
         });
         title = `${prop.titulo} • ${precoFmt}`;
         description = nome;
-        image = ensureAbsoluteImage(propImg ?? prof?.foto_url ?? null, prop.updated_at);
+        image = ogVehicleImage(prop.slug ?? prop.id, prop.updated_at);
         if (prof?.slug && prop.slug) {
           canonical = `${APP_BASE_URL}/${encodeURIComponent(prof.slug)}/${encodeURIComponent(prop.slug)}`;
         } else {
