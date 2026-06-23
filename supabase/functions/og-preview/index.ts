@@ -17,10 +17,9 @@ const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 // URL pública da app (onde o usuário humano vai parar)
 const APP_BASE_URL = "https://garage.app";
 
-// Endpoint que gera dinamicamente a imagem OG padronizada Garage.
-const OG_IMAGE_ENDPOINT = `${SUPABASE_URL}/functions/v1/og-image`;
-// Imagem institucional (cartão da marca, sem parâmetros).
-const BRAND_OG_IMAGE = OG_IMAGE_ENDPOINT;
+// Imagem Open Graph oficial e única da Garage (1200x630).
+// Usada em TODOS os compartilhamentos (loja, veículo, institucional).
+const BRAND_OG_IMAGE = `${APP_BASE_URL}/og-garage.jpg`;
 const DEFAULT_OG_IMAGE = BRAND_OG_IMAGE;
 
 const corsHeaders = {
@@ -45,18 +44,12 @@ function escapeHtml(s: string): string {
 }
 
 /** Acrescenta um query param de cache-buster para forçar o WhatsApp/Facebook a atualizar a prévia. */
-function withVersion(url: string, version: string | null | undefined): string {
-  if (!url) return url;
-  if (!version) return url;
-  const sep = url.includes("?") ? "&" : "?";
-  return `${url}${sep}v=${encodeURIComponent(version)}`;
+// Mantemos uma assinatura compatível para minimizar mudanças no restante do arquivo.
+function ogStoreImage(_slug: string, _version?: string | null): string {
+  return BRAND_OG_IMAGE;
 }
-
-function ogStoreImage(slug: string, version?: string | null): string {
-  return withVersion(`${OG_IMAGE_ENDPOINT}?store=${encodeURIComponent(slug)}`, version);
-}
-function ogVehicleImage(idOrSlug: string, version?: string | null): string {
-  return withVersion(`${OG_IMAGE_ENDPOINT}?vehicle=${encodeURIComponent(idOrSlug)}`, version);
+function ogVehicleImage(_idOrSlug: string, _version?: string | null): string {
+  return BRAND_OG_IMAGE;
 }
 
 function buildHtml(args: {
@@ -87,7 +80,7 @@ function buildHtml(args: {
     <meta property="og:description" content="${safeDesc}" />
     <meta property="og:image" content="${safeImg}" />
     <meta property="og:image:secure_url" content="${safeImg}" />
-    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:type" content="image/jpeg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:alt" content="${safeTitle}" />
