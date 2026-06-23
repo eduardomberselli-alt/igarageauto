@@ -8,7 +8,8 @@ type Props = {
   type?: "website" | "article" | "profile";
 };
 
-const DEFAULT_IMAGE = "https://garage.app/og-image.jpg";
+const DEFAULT_IMAGE =
+  "https://zcylysblvjxgbobtwuvc.supabase.co/functions/v1/og-image";
 
 /**
  * Tags SEO + Open Graph + Twitter Card.
