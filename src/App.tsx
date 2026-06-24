@@ -76,6 +76,7 @@ const App = () => (
                 <Route path="/v/:veiculoSlug" element={<ClientVehicleRedirect />} />
                 <Route path="/veiculo/:id" element={<ImovelPublic />} />
                 <Route path="/imovel/:id" element={<ImovelPublic />} />
+                <Route path="/c/:id" element={<ImovelPublic />} />
                 <Route path="/p/:lojaSlug" element={<ClientVitrine />} />
                 <Route path="/loja/:lojaSlug" element={<Navigate to="vitrine" replace />} />
                 <Route path="/loja/:lojaSlug/vitrine" element={<ClientVitrine />} />

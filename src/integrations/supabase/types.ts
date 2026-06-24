@@ -415,6 +415,7 @@ export type Database = {
       properties: {
         Row: {
           bairro: string
+          card_signature: string | null
           city: string | null
           created_at: string
           descricao: string
@@ -435,6 +436,7 @@ export type Database = {
           slug: string | null
           titulo: string
           updated_at: string
+          url_card_whatsapp: string | null
           vendido: boolean
           view_count_today: number
           whatsapp_clicks_today: number
@@ -442,6 +444,7 @@ export type Database = {
         }
         Insert: {
           bairro?: string
+          card_signature?: string | null
           city?: string | null
           created_at?: string
           descricao?: string
@@ -462,6 +465,7 @@ export type Database = {
           slug?: string | null
           titulo: string
           updated_at?: string
+          url_card_whatsapp?: string | null
           vendido?: boolean
           view_count_today?: number
           whatsapp_clicks_today?: number
@@ -469,6 +473,7 @@ export type Database = {
         }
         Update: {
           bairro?: string
+          card_signature?: string | null
           city?: string | null
           created_at?: string
           descricao?: string
@@ -489,6 +494,7 @@ export type Database = {
           slug?: string | null
           titulo?: string
           updated_at?: string
+          url_card_whatsapp?: string | null
           vendido?: boolean
           view_count_today?: number
           whatsapp_clicks_today?: number

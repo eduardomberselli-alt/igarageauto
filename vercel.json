@@ -22,6 +22,17 @@
       ],
       "destination": "https://zcylysblvjxgbobtwuvc.supabase.co/functions/v1/og-preview?imovel=:id"
     },
+    {
+      "source": "/c/:id",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i).*(facebookexternalhit|facebot|twitterbot|whatsapp|telegrambot|slackbot|linkedinbot|discordbot|pinterest|skypeuripreview|embedly|redditbot|applebot|preview|fetcher).*"
+        }
+      ],
+      "destination": "https://zcylysblvjxgbobtwuvc.supabase.co/functions/v1/og-preview?c=:id"
+    },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
