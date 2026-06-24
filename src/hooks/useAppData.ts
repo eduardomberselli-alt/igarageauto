@@ -300,6 +300,9 @@ export function usePublicProperty(id: string | undefined) {
         whatsappClicksToday: (p as any).whatsapp_clicks_today ?? 0,
         lastPrice: (p as any).last_price != null ? Number((p as any).last_price) : null,
         publishedAt: (p as any).published_at ?? null,
+        updatedAt: (p as any).updated_at ?? null,
+        urlCardWhatsapp: (p as any).url_card_whatsapp ?? null,
+        cardSignature: (p as any).card_signature ?? null,
         videos: ((p.videos as any[]) ?? []).map((v) => ({
           id: v.id,
           titulo: v.titulo,
