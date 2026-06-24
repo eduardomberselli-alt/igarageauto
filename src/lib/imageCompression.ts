@@ -50,7 +50,13 @@ export async function compressImage(
     const watermarkImg = opts.watermarkImage
       ?? (opts.watermarkUrl ? await loadImageCORS(opts.watermarkUrl).catch(() => null) : null);
     if (watermarkImg) {
-      // Força opacidade total pois os 30% já foram aplicados na imagem do perfil
+      // Sombra projetada para contraste em fotos claras
+      ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+      ctx.shadowBlur = 6;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
+
+      // A imagem da marca d'água já vem com opacidade 75% pré-aplicada do perfil
       ctx.globalAlpha = 1.0;
 
       // CÁLCULO DA LARGURA EM 58% (Forçando ficar grande de verdade)
@@ -66,15 +72,31 @@ export async function compressImage(
       // Desenha a logo grande por cima da foto do veículo
       ctx.drawImage(watermarkImg, posicaoX, posicaoY, larguraDesejada, alturaProporcional);
 
+      // Reseta sombra e opacidade
+      ctx.shadowColor = "transparent";
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+
       console.log("LOG: Marca d'água aplicada com largura de:", larguraDesejada, "px no centro.");
     } else if (opts.watermarkText) {
       // Fallback se não tiver imagem
-      ctx.globalAlpha = 0.30;
+      ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
+      ctx.shadowBlur = 6;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 2;
+
+      ctx.globalAlpha = 0.75;
       ctx.fillStyle = "#D4AF37";
       ctx.font = "bold 56px sans-serif"; // Fonte grande para o fallback
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("✨ Garage", targetW / 2, targetH / 2);
+
+      ctx.shadowColor = "transparent";
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
     }
 
     ctx.globalAlpha = 1.0; // Reseta a opacidade do Canvas para o padrão
