@@ -254,15 +254,22 @@ Deno.serve(async (req) => {
     else if (slug) {
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
       const profQuery = isUuid
-        ? client.from("profiles").select("user_id, nome, slug, updated_at").eq("user_id", slug)
-        : client.from("profiles").select("user_id, nome, slug, updated_at").eq("slug", slug);
+        ? client
+            .from("profiles")
+            .select("user_id, nome, slug, updated_at, frase_chamada, url_card_whatsapp")
+            .eq("user_id", slug)
+        : client
+            .from("profiles")
+            .select("user_id, nome, slug, updated_at, frase_chamada, url_card_whatsapp")
+            .eq("slug", slug);
       const { data: prof } = await profQuery.maybeSingle();
 
       if (prof?.user_id) {
         const nome = prof.nome?.trim() || "Loja parceira";
         title = nome;
-        description = "Confira nosso estoque e fale com a nossa equipe.";
-        image = ogStoreImage(prof.slug ?? slug, prof.updated_at);
+        description = (prof.frase_chamada as string | null)?.trim()
+          || "Confira nosso estoque completo!";
+        image = (prof.url_card_whatsapp as string | null) || BRAND_OG_IMAGE;
       }
       canonical = `${APP_BASE_URL}/p/${encodeURIComponent(slug)}`;
       redirect = canonical;
@@ -309,15 +316,15 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Crawler -> HTML com OG tags. Humano -> redirect 302 direto.
+    // Crawler -> HTML com OG tags injetadas no index.html. Humano -> redirect 302.
     if (isCrawler(ua)) {
-      const html = buildHtml({ title, description, image, canonical, redirect });
+      const baseHtml = await loadIndexHtml();
+      const html = injectMetaTags(baseHtml, { title, description, image, canonical });
       return new Response(html, {
         status: 200,
         headers: {
           ...corsHeaders,
           "Content-Type": "text/html; charset=utf-8",
-          // Cache curto para crawlers respeitarem mudanças de foto rapidamente.
           "Cache-Control": "public, max-age=120, s-maxage=120",
         },
       });
