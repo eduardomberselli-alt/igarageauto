@@ -120,6 +120,23 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
   const [restDif, setRestDif] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [watermarkUrl, setWatermarkUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    if (!user) return;
+    (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("url_marca_dagua")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (active) setWatermarkUrl(((data as any)?.url_marca_dagua as string | null) ?? null);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [user]);
 
   useEffect(() => {
     if (!open) return;
@@ -195,6 +212,8 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
         file = await compressImage(original, {
           maxBytes: MAX_PHOTO_SIZE_MB * 1024 * 1024,
           maxDimension: 1920,
+          watermarkUrl: watermarkUrl ?? null,
+          watermarkText: watermarkUrl ? null : "✨ Garage",
         });
       } catch {
         // mantém o original
