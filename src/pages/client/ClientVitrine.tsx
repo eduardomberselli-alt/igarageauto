@@ -46,7 +46,7 @@ export default function ClientVitrine() {
         description={descricaoLoja}
         image={imagemCard}
         imageType={profile?.urlCardWhatsapp ? "image/jpeg" : "image/png"}
-        url={storeUrl}
+        url={urlAtual}
         type="website"
       />
       <ClientHeader />
