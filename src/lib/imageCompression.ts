@@ -146,14 +146,61 @@ async function drawWatermark(
 }
 
 function loadImage(url: string): Promise<HTMLImageElement | null> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
-    // bust de cache leve para garantir CORS consistente
-    img.src = url;
-  });
+  // Estratégia 1: <img crossOrigin="anonymous"> com cache-bust para garantir
+  // que o servidor responda com Access-Control-Allow-Origin e o canvas não
+  // seja "tainted" ao desenhar a logo da loja.
+  const withBust = (() => {
+    try {
+      const u = new URL(url, window.location.href);
+      u.searchParams.set("wm", "1");
+      return u.toString();
+    } catch {
+      return url;
+    }
+  })();
+
+  const tryDirect = () =>
+    new Promise<HTMLImageElement | null>((resolve) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.decoding = "async";
+      img.referrerPolicy = "no-referrer";
+      img.onload = async () => {
+        try {
+          // Garante que os pixels estão disponíveis antes de devolver
+          if (typeof img.decode === "function") await img.decode();
+        } catch {
+          /* ignore */
+        }
+        resolve(img);
+      };
+      img.onerror = () => resolve(null);
+      img.src = withBust;
+    });
+
+  // Estratégia 2 (fallback): baixa via fetch e converte em ObjectURL.
+  // Contorna casos em que o <img> não consegue carregar com CORS direto.
+  const tryFetch = async (): Promise<HTMLImageElement | null> => {
+    try {
+      const res = await fetch(withBust, { mode: "cors", credentials: "omit" });
+      if (!res.ok) return null;
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const img = await new Promise<HTMLImageElement | null>((resolve) => {
+        const i = new Image();
+        i.onload = () => resolve(i);
+        i.onerror = () => resolve(null);
+        i.src = objectUrl;
+      });
+      // Libera o ObjectURL após algum tempo (o canvas já desenhou os pixels).
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 10_000);
+      return img;
+    } catch {
+      return null;
+    }
+  };
+
+  return tryDirect().then((img) => img ?? tryFetch());
 }
 
 async function loadBitmap(file: File): Promise<ImageBitmap | null> {
