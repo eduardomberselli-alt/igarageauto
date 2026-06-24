@@ -40,7 +40,7 @@ type Props = {
 };
 
 const MAX_PHOTO_SIZE_MB = 1;
-const MAX_VIDEO_SIZE_MB = 5;
+const MAX_VIDEO_SIZE_MB = 50;
 const ACCEPTED_VIDEO_TYPES = ["video/mp4", "video/quicktime", "video/webm"];
 
 const CAMBIOS = ["Manual", "Automático", "CVT"] as const;
