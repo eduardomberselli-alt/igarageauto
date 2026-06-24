@@ -89,13 +89,21 @@ export default function ClientVitrine() {
         )}
 
         <div className="grid grid-cols-1 gap-3">
-          {filtered.map((p, idx) => (
-            <>
+          {filtered.map((p, idx) => {
+            const card = (
               <ClientVehicleCard key={p.id} property={p} ownerSlug={profile?.slug} />
-              {idx === 1 && <AcademyHomeCard key="academy-card" />}
-            </>
-          ))}
-          {filtered.length > 0 && filtered.length <= 1 && <AcademyHomeCard />}
+            );
+            if (idx === 1) {
+              return (
+                <div key={p.id} className="contents">
+                  {card}
+                  <AcademyHomeCard />
+                </div>
+              );
+            }
+            return card;
+          })}
+          {filtered.length > 0 && filtered.length < 2 && <AcademyHomeCard />}
         </div>
       </main>
     </>
