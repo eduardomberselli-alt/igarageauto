@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { MAX_PROPERTY_PHOTOS, type Property } from "@/types";
 import { cn } from "@/lib/utils";
 import { compressImage } from "@/lib/imageCompression";
+import { WatermarkPreviewDialog } from "@/components/WatermarkPreviewDialog";
 
 export type PropertyFormValues = {
   titulo: string;
@@ -125,6 +126,8 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
   const videoInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingVideo, setUploadingVideo] = useState(false);
   const [storeLogoUrl, setStoreLogoUrl] = useState<string | null>(null);
+  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
   // Busca a logo da loja do lojista logado para usar como marca d'água
   useEffect(() => {
@@ -208,9 +211,7 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
     }
 
     setUploading(true);
-    const folder = initial?.id ?? user.id;
-    const uploaded: string[] = [];
-
+    const processed: File[] = [];
     for (const original of list) {
       if (!original.type.startsWith("image/")) {
         toast.error(`"${original.name}" não é uma imagem`);
@@ -232,30 +233,48 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
         toast.error(`"${original.name}" não pôde ser reduzida para ${MAX_PHOTO_SIZE_MB}MB`);
         continue;
       }
+      processed.push(file);
+    }
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
 
+    if (processed.length === 0) return;
+    setPendingFiles(processed);
+    setPreviewOpen(true);
+  };
+
+  const cancelPreview = () => {
+    setPreviewOpen(false);
+    setPendingFiles([]);
+  };
+
+  const confirmPreviewUpload = async () => {
+    if (!user || pendingFiles.length === 0) return;
+    setUploading(true);
+    const folder = initial?.id ?? user.id;
+    const uploaded: string[] = [];
+    for (const file of pendingFiles) {
       const ext = (file.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
       const path = `${user.id}/${folder}/${Date.now()}-${Math.random()
         .toString(36)
         .slice(2, 8)}.${ext}`;
-
       const { error: upErr } = await supabase.storage
         .from("properties")
         .upload(path, file, { upsert: false, contentType: file.type });
-
       if (upErr) {
-        toast.error(`Falha ao enviar ${original.name}: ${upErr.message}`);
+        toast.error(`Falha ao enviar ${file.name}: ${upErr.message}`);
         continue;
       }
       const { data: pub } = supabase.storage.from("properties").getPublicUrl(path);
       if (pub?.publicUrl) uploaded.push(pub.publicUrl);
     }
-
     if (uploaded.length > 0) {
       setFotos([...form.fotosUrls, ...uploaded]);
       toast.success(`${uploaded.length} foto(s) enviada(s)`);
     }
     setUploading(false);
-    if (fileInputRef.current) fileInputRef.current.value = "";
+    setPendingFiles([]);
+    setPreviewOpen(false);
   };
 
   const removeFoto = (idx: number) => setFotos(form.fotosUrls.filter((_, i) => i !== idx));
