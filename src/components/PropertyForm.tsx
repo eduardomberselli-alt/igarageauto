@@ -248,10 +248,10 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
     }
     if (file.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) {
       toast.error(
-        `❌ O arquivo de vídeo excede o limite de ${MAX_VIDEO_SIZE_MB}MB para upload direto.`,
+        `❌ O arquivo de vídeo excede o limite de ${MAX_VIDEO_SIZE_MB}MB.`,
         {
           description:
-            "Para prosseguir: 1) Reduza o arquivo em uma ferramenta gratuita (VideoPresso, Clideo, Online Converter) ou 2) Publique no YouTube/Vimeo e cole o link no campo.",
+            "💡 Dica rápida: Você pode enviar o vídeo no seu próprio WhatsApp (ou para você mesmo) e baixá-lo de volta no celular. O WhatsApp comprime o arquivo automaticamente para um tamanho super leve! Depois, tente reenviar o vídeo baixado aqui.\n\nSe preferir, publique-o no YouTube e cole o link acima.",
           duration: 10000,
         },
       );
