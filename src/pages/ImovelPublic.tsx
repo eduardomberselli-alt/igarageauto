@@ -157,7 +157,8 @@ export default function ImovelPublic() {
   };
 
   const handleShare = async () => {
-    const shareText = `${property.titulo} — ${formatBRL(property.preco)}\n\n📲 Clique na foto ou no link abaixo para ver todos os detalhes:\n${shareUrl}`;
+    // Link de compartilhamento do card do WhatsApp (versionado p/ burlar cache).
+    let shareUrl = shareCardUrl;
 
     // Tenta gerar link rastreável (não bloqueia o share se falhar)
     try {
@@ -174,6 +175,8 @@ export default function ImovelPublic() {
     } catch {
       // segue com a URL amigável
     }
+
+    const shareText = `${property.titulo} — ${formatBRL(property.preco)}\n\n📲 Clique na foto ou no link abaixo para ver todos os detalhes:\n${shareUrl}`;
 
     const shareData = { title: "Confira este veículo", text: shareText, url: shareUrl };
     try {
