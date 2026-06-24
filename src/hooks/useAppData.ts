@@ -335,6 +335,7 @@ export function usePublicProperty(id: string | undefined) {
           websiteUrl: (prof as any).website_url ?? null,
           brandPrimaryColor: (prof as any).brand_primary_color ?? "#722F37",
           brandAccentColor: (prof as any).brand_accent_color ?? "#D4AF37",
+          logoLojaUrl: (prof as any).logo_loja_url ?? null,
         });
       }
 
