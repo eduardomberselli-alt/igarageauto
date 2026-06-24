@@ -19,7 +19,9 @@ const preloadWatermark = (url: string): Promise<HTMLImageElement | null> =>
     img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
     img.onerror = () => resolve(null);
-    img.src = url;
+    // cache-bust para evitar reuso de resposta cacheada sem cabeçalhos CORS
+    const sep = url.includes("?") ? "&" : "?";
+    img.src = `${url}${sep}cb=${Date.now()}`;
   });
 
 export type PropertyFormValues = {
