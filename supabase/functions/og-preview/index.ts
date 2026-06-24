@@ -194,7 +194,7 @@ Deno.serve(async (req) => {
     const ua = req.headers.get("user-agent");
     const slug = url.searchParams.get("p");
     const code = url.searchParams.get("code");
-    const imovelId = url.searchParams.get("imovel");
+    const imovelId = url.searchParams.get("imovel") ?? url.searchParams.get("c");
     // `route` permite forçar a prévia de uma rota institucional (home/auth)
     // mesmo sem parâmetros específicos. Ex.: /og-preview?route=auth
     const route = (url.searchParams.get("route") ?? "").toLowerCase();
@@ -281,11 +281,11 @@ Deno.serve(async (req) => {
       const propQuery = isUuid
         ? client
             .from("properties")
-            .select("id, titulo, preco, owner_id, updated_at, slug")
+            .select("id, titulo, preco, owner_id, updated_at, slug, url_card_whatsapp")
             .eq("id", imovelId)
         : client
             .from("properties")
-            .select("id, titulo, preco, owner_id, updated_at, slug")
+            .select("id, titulo, preco, owner_id, updated_at, slug, url_card_whatsapp")
             .eq("slug", imovelId);
       const { data: prop } = await propQuery.maybeSingle();
 
@@ -303,7 +303,8 @@ Deno.serve(async (req) => {
         });
         title = `${prop.titulo} • ${precoFmt}`;
         description = nome;
-        image = ogVehicleImage(prop.slug ?? prop.id, prop.updated_at);
+        image = (prop.url_card_whatsapp as string | null)
+          || ogVehicleImage(prop.slug ?? prop.id, prop.updated_at);
         if (prof?.slug && prop.slug) {
           canonical = `${APP_BASE_URL}/${encodeURIComponent(prof.slug)}/${encodeURIComponent(prop.slug)}`;
         } else {
