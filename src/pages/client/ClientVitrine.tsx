@@ -33,22 +33,22 @@ export default function ClientVitrine() {
     return sorted;
   }, [properties, filter]);
 
-  const storeUrl = profile?.slug
-    ? `https://igarageauto.vercel.app/p/${profile.slug}`
-    : undefined;
+  const storeUrl = `https://igarageauto.vercel.app/p/${lojaSlug ?? profile?.slug ?? ""}`;
+  const nomeLoja = profile?.nome || "Garage";
+  const descricaoLoja = profile?.fraseChamada || "Confira nosso estoque completo!";
+  const imagemCard =
+    profile?.urlCardWhatsapp || "https://igarageauto.vercel.app/og-default.png";
 
   return (
     <>
-      {profile && (
-        <SeoTags
-          title={profile.nome || "Garage"}
-          description={profile.fraseChamada || "Confira nosso estoque completo!"}
-          image={profile.urlCardWhatsapp || "/og-default.png"}
-          imageType={profile.urlCardWhatsapp ? "image/jpeg" : "image/png"}
-          url={storeUrl}
-          type="website"
-        />
-      )}
+      <SeoTags
+        title={nomeLoja}
+        description={descricaoLoja}
+        image={imagemCard}
+        imageType={profile?.urlCardWhatsapp ? "image/jpeg" : "image/png"}
+        url={storeUrl}
+        type="website"
+      />
       <ClientHeader />
       <main className="px-4 pt-4">
         <div className="flex items-end justify-between mb-3">
