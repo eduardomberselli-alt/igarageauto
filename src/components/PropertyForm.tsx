@@ -12,7 +12,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { MAX_PROPERTY_PHOTOS, type Property } from "@/types";
 import { cn } from "@/lib/utils";
 import { compressImage } from "@/lib/imageCompression";
-import { WatermarkPreviewDialog } from "@/components/WatermarkPreviewDialog";
 
 export type PropertyFormValues = {
   titulo: string;
