@@ -7,10 +7,10 @@ import { AcademySection } from "@/components/academy/AcademySection";
 import { ComingSoonCard } from "@/components/academy/ComingSoonCard";
 import { VideoPlayer } from "@/components/academy/VideoPlayer";
 import {
-  academyCategories,
+  useAcademyCategories,
+  useAcademyVideos,
   getCategoryBySlug,
   getVideoById,
-  getVideosByCategoryId,
   type AcademyVideo,
 } from "@/data/academyData";
 
@@ -18,20 +18,27 @@ export default function ClientAcademy() {
   const { category: categorySlug, id: videoId } = useParams();
   const navigate = useNavigate();
   const [active, setActive] = useState<AcademyVideo | null>(null);
+  const categories = useAcademyCategories();
+  const videos = useAcademyVideos();
 
   const filterCategory = categorySlug ? getCategoryBySlug(categorySlug) : null;
 
   const sections = useMemo(() => {
-    const active = academyCategories
+    const active = categories
       .filter((c) => c.status === "active")
       .filter((c) => (filterCategory ? c.id === filterCategory.id : true))
       .sort((a, b) => a.order - b.order);
-    const coming = academyCategories
+    const coming = categories
       .filter((c) => c.status === "coming_soon")
       .filter((c) => (filterCategory ? c.id === filterCategory.id : true))
       .sort((a, b) => a.order - b.order);
     return { active, coming };
-  }, [filterCategory]);
+  }, [categories, filterCategory]);
+
+  const videosByCategory = (id: string) =>
+    videos
+      .filter((v) => v.category_id === id && v.status === "published")
+      .sort((a, b) => a.order - b.order);
 
   // Suporte a /academy/video/:id — abre o player diretamente.
   useEffect(() => {
@@ -69,7 +76,7 @@ export default function ClientAcademy() {
           <AcademySection
             key={cat.id}
             category={cat}
-            videos={getVideosByCategoryId(cat.id)}
+            videos={videosByCategory(cat.id)}
             onPlay={setActive}
           />
         ))}

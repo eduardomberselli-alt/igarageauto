@@ -1,5 +1,5 @@
 import { Outlet, NavLink, Link } from "react-router-dom";
-import { Users, GraduationCap, Inbox, ArrowLeft, LogOut, BookOpen, Store, LayoutDashboard, Car } from "lucide-react";
+import { Users, GraduationCap, Inbox, ArrowLeft, LogOut, BookOpen, Store, LayoutDashboard, Car, Clapperboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,6 +9,7 @@ const adminTabs = [
   { to: "/admin/lojas", label: "Lojas", icon: Store },
   { to: "/admin/lojistas", label: "Lojistas", icon: Users },
   { to: "/admin/leads", label: "Leads", icon: Inbox },
+  { to: "/admin/academy", label: "Academy", icon: Clapperboard },
   { to: "/admin/conhecimento", label: "Conhecimento", icon: BookOpen },
   { to: "/admin/aulas", label: "Aulas", icon: GraduationCap },
 ];

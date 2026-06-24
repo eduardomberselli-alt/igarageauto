@@ -38,6 +38,7 @@ import AdminAulas from "./pages/admin/AdminAulas";
 import AdminLeads from "./pages/admin/AdminLeads";
 import AdminConvites from "./pages/admin/AdminConvites";
 import AdminLojas from "./pages/admin/AdminLojas";
+import AdminAcademy from "./pages/admin/AdminAcademy";
 import NotFound from "./pages/NotFound.tsx";
 import { AdminViewProvider } from "@/contexts/AdminViewContext";
 
@@ -115,6 +116,7 @@ const App = () => (
                   <Route path="/admin/aulas" element={<AdminAulas />} />
                   <Route path="/admin/leads" element={<AdminLeads />} />
                   <Route path="/admin/conhecimento" element={<AdminConhecimento />} />
+                  <Route path="/admin/academy" element={<AdminAcademy />} />
                   {/* Convites: oculto da UI, rota mantida para compatibilidade */}
                   <Route path="/admin/convites" element={<AdminConvites />} />
                 </Route>
