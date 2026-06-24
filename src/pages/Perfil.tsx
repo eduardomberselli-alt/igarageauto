@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, Plus, LogOut, Copy, ExternalLink, Download, Upload, Loader2, Share2, Store } from "lucide-react";
+import { X, Plus, LogOut, Copy, ExternalLink, Download, Upload, Loader2, Share2, Store, Sparkles, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { QRCodeCanvas } from "qrcode.react";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAdminView } from "@/contexts/AdminViewContext";
 
 import { supabase } from "@/integrations/supabase/client";
-import { compressImage } from "@/lib/imageCompression";
+import { compressImage, generateWatermarkPng } from "@/lib/imageCompression";
 
 function slugify(s: string) {
   return s
@@ -67,10 +67,12 @@ export default function Perfil() {
     youtubeUrl: "",
     linkedinUrl: "",
     websiteUrl: "",
+    urlMarcaDagua: "",
   });
   const [novaInfo, setNovaInfo] = useState("");
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [generatingWm, setGeneratingWm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -91,6 +93,7 @@ export default function Perfil() {
         youtubeUrl: profile.youtubeUrl ?? "",
         linkedinUrl: profile.linkedinUrl ?? "",
         websiteUrl: profile.websiteUrl ?? "",
+        urlMarcaDagua: profile.urlMarcaDagua ?? "",
       });
     }
   }, [profile]);
@@ -122,6 +125,7 @@ export default function Perfil() {
     youtubeUrl: form.youtubeUrl.trim() || null,
     linkedinUrl: form.linkedinUrl.trim() || null,
     websiteUrl: form.websiteUrl.trim() || null,
+    urlMarcaDagua: form.urlMarcaDagua.trim() || null,
   });
 
   const handleSave = async () => {
@@ -134,6 +138,40 @@ export default function Perfil() {
     } else {
       toast.success("Perfil salvo");
     }
+  };
+
+  const handleGenerateWatermark = async () => {
+    if (!form.fotoUrl || !user) {
+      toast.error("Envie a logo da loja primeiro");
+      return;
+    }
+    setGeneratingWm(true);
+    try {
+      const blob = await generateWatermarkPng(form.fotoUrl, { maxWidth: 200, opacity: 0.18 });
+      const path = `${user.id}/watermarks/watermark-${Date.now()}.png`;
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, blob, { cacheControl: "3600", upsert: true, contentType: "image/png" });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+      const publicUrl = data.publicUrl;
+      setForm((p) => ({ ...p, urlMarcaDagua: publicUrl }));
+      const err = await save({ ...buildPayload(), urlMarcaDagua: publicUrl } as any);
+      if (err) throw err;
+      toast.success("Marca d'água gerada e salva!");
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "Falha ao gerar marca d'água (verifique CORS da logo)");
+    } finally {
+      setGeneratingWm(false);
+    }
+  };
+
+  const handleRemoveWatermark = async () => {
+    setForm((p) => ({ ...p, urlMarcaDagua: "" }));
+    const err = await save({ ...buildPayload(), urlMarcaDagua: null } as any);
+    if (err) toast.error(err.message);
+    else toast.success("Marca d'água removida");
   };
 
   const hasSlug = !!form.slug.trim();
@@ -280,6 +318,72 @@ export default function Perfil() {
             <p className="text-[11px] text-muted-foreground mt-1 text-center">
               Toque no ícone para enviar o logo da sua loja (máx. 5MB)
             </p>
+
+            {/* Marca d'água automática */}
+            <div className="mt-4 w-full max-w-xs rounded-2xl border border-border bg-card p-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 text-center">
+                Marca d'água nas fotos
+              </p>
+              {form.urlMarcaDagua ? (
+                <div className="flex flex-col items-center gap-2">
+                  <div
+                    className="h-20 w-full rounded-lg border border-border flex items-center justify-center"
+                    style={{
+                      backgroundImage:
+                        "linear-gradient(45deg,#e5e7eb 25%,transparent 25%),linear-gradient(-45deg,#e5e7eb 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e5e7eb 75%),linear-gradient(-45deg,transparent 75%,#e5e7eb 75%)",
+                      backgroundSize: "12px 12px",
+                      backgroundPosition: "0 0,0 6px,6px -6px,-6px 0",
+                    }}
+                  >
+                    <img
+                      src={form.urlMarcaDagua}
+                      alt="Marca d'água"
+                      className="max-h-16 max-w-[80%] object-contain"
+                    />
+                  </div>
+                  <div className="flex gap-2 w-full">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={handleGenerateWatermark}
+                      disabled={generatingWm || !form.fotoUrl}
+                    >
+                      {generatingWm ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                      Regenerar
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      onClick={handleRemoveWatermark}
+                      aria-label="Remover marca d'água"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <Button
+                  type="button"
+                  size="sm"
+                  className="w-full"
+                  onClick={handleGenerateWatermark}
+                  disabled={generatingWm || !form.fotoUrl}
+                >
+                  {generatingWm ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="h-4 w-4" />
+                  )}
+                  ✨ Gerar Marca d'Água Automática
+                </Button>
+              )}
+              <p className="mt-2 text-[10px] text-muted-foreground text-center leading-tight">
+                Gera uma versão da sua logo com 18% de opacidade, aplicada no centro das fotos dos veículos.
+              </p>
+            </div>
           </div>
 
           {/* Link da loja */}
