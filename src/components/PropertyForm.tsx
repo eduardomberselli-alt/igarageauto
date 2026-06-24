@@ -577,8 +577,8 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
             />
           </div>
 
-          <Button onClick={submit} className="w-full" size="lg" disabled={uploading}>
-            {uploading ? "Enviando fotos…" : "Salvar veículo"}
+          <Button onClick={submit} className="w-full" size="lg" disabled={uploading || uploadingVideo}>
+            {uploading || uploadingVideo ? "Carregando…" : "Salvar veículo"}
           </Button>
         </div>
       </SheetContent>
