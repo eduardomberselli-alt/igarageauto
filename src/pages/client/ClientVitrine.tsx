@@ -33,13 +33,20 @@ export default function ClientVitrine() {
     return sorted;
   }, [properties, filter]);
 
+  const storeUrl = profile?.slug
+    ? `https://igarageauto.vercel.app/p/${profile.slug}`
+    : undefined;
+
   return (
     <>
       {profile && (
         <SeoTags
-          title={profile.nome}
-          description="Confira nosso estoque e fale com a nossa equipe."
-          image={profile.fotoUrl ?? undefined}
+          title={profile.nome || "Garage"}
+          description={profile.fraseChamada || "Confira nosso estoque completo!"}
+          image={profile.urlCardWhatsapp || "/og-default.png"}
+          imageType={profile.urlCardWhatsapp ? "image/jpeg" : "image/png"}
+          url={storeUrl}
+          type="website"
         />
       )}
       <ClientHeader />
