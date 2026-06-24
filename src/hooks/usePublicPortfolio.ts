@@ -52,6 +52,7 @@ export function usePublicPortfolio(slugOrId: string | undefined) {
         brandAccentColor: (prof as any).brand_accent_color ?? "#D4AF37",
         urlCardWhatsapp: (prof as any).url_card_whatsapp ?? null,
         logoLojaUrl: (prof as any).logo_loja_url ?? null,
+        fraseChamada: (prof as any).frase_chamada ?? null,
       });
 
       const { data: props } = await supabase
