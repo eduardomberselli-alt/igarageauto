@@ -30,6 +30,9 @@ export type Property = {
   lastPrice?: number | null;
   publishedAt?: string | null;
   createdAt?: string | null;
+  updatedAt?: string | null;
+  urlCardWhatsapp?: string | null;
+  cardSignature?: string | null;
 };
 
 export const MAX_PROPERTY_PHOTOS = 10;
