@@ -15,6 +15,7 @@ export async function compressImage(
     qualitySteps?: number[];
     watermarkUrl?: string | null;
     watermarkText?: string | null;
+    watermarkImage?: HTMLImageElement | null;
   } = {},
 ): Promise<File> {
   const maxBytes = opts.maxBytes ?? 5 * 1024 * 1024;
@@ -46,8 +47,9 @@ export async function compressImage(
 
   // ----- Marca d'água -----
   try {
-    if (opts.watermarkUrl) {
-      const wmImg = await loadImageCORS(opts.watermarkUrl);
+    const wmImg = opts.watermarkImage
+      ?? (opts.watermarkUrl ? await loadImageCORS(opts.watermarkUrl).catch(() => null) : null);
+    if (wmImg) {
       // largura máx ~15% da foto, preservando proporção da imagem (já transparente)
       const wmTargetW = Math.min(wmImg.naturalWidth, Math.round(targetW * 0.15));
       const scale2 = wmTargetW / wmImg.naturalWidth;
