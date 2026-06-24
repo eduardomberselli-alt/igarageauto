@@ -12,7 +12,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { MAX_PROPERTY_PHOTOS, type Property } from "@/types";
 import { cn } from "@/lib/utils";
 import { compressImage } from "@/lib/imageCompression";
-import { WatermarkPreviewDialog } from "@/components/WatermarkPreviewDialog";
 
 export type PropertyFormValues = {
   titulo: string;
@@ -125,29 +124,6 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const videoInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingVideo, setUploadingVideo] = useState(false);
-  const [storeLogoUrl, setStoreLogoUrl] = useState<string | null>(null);
-  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
-  const [previewOpen, setPreviewOpen] = useState(false);
-
-  // Busca a logo da loja do lojista logado para usar como marca d'água
-  useEffect(() => {
-    if (!user?.id) {
-      setStoreLogoUrl(null);
-      return;
-    }
-    let cancelled = false;
-    supabase
-      .from("profiles")
-      .select("foto_url")
-      .eq("id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!cancelled) setStoreLogoUrl((data as { foto_url?: string } | null)?.foto_url ?? null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.id]);
 
   useEffect(() => {
     if (!open) return;
@@ -211,7 +187,8 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
     }
 
     setUploading(true);
-    const processed: File[] = [];
+    const folder = initial?.id ?? user.id;
+    const uploaded: string[] = [];
     for (const original of list) {
       if (!original.type.startsWith("image/")) {
         toast.error(`"${original.name}" não é uma imagem`);
@@ -222,9 +199,6 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
         file = await compressImage(original, {
           maxBytes: MAX_PHOTO_SIZE_MB * 1024 * 1024,
           maxDimension: 1920,
-          watermarkUrl: storeLogoUrl,
-          watermarkOpacity: 0.8,
-          watermarkScale: 0.28,
         });
       } catch {
         // mantém o original
@@ -233,27 +207,6 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
         toast.error(`"${original.name}" não pôde ser reduzida para ${MAX_PHOTO_SIZE_MB}MB`);
         continue;
       }
-      processed.push(file);
-    }
-    setUploading(false);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-
-    if (processed.length === 0) return;
-    setPendingFiles(processed);
-    setPreviewOpen(true);
-  };
-
-  const cancelPreview = () => {
-    setPreviewOpen(false);
-    setPendingFiles([]);
-  };
-
-  const confirmPreviewUpload = async () => {
-    if (!user || pendingFiles.length === 0) return;
-    setUploading(true);
-    const folder = initial?.id ?? user.id;
-    const uploaded: string[] = [];
-    for (const file of pendingFiles) {
       const ext = (file.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
       const path = `${user.id}/${folder}/${Date.now()}-${Math.random()
         .toString(36)
@@ -273,8 +226,7 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
       toast.success(`${uploaded.length} foto(s) enviada(s)`);
     }
     setUploading(false);
-    setPendingFiles([]);
-    setPreviewOpen(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const removeFoto = (idx: number) => setFotos(form.fotosUrls.filter((_, i) => i !== idx));
@@ -631,13 +583,6 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
         </div>
       </SheetContent>
     </Sheet>
-    <WatermarkPreviewDialog
-      open={previewOpen}
-      files={pendingFiles}
-      uploading={uploading}
-      onConfirm={confirmPreviewUpload}
-      onCancel={cancelPreview}
-    />
     </>
   );
 }
