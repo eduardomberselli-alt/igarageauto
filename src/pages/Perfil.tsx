@@ -327,7 +327,7 @@ export default function Perfil() {
               {form.urlMarcaDagua ? (
                 <div className="flex flex-col items-center gap-2">
                   <div
-                    className="h-20 w-full rounded-lg border border-border flex items-center justify-center"
+                    className="h-32 w-full rounded-lg border border-border flex items-center justify-center overflow-hidden"
                     style={{
                       backgroundImage:
                         "linear-gradient(45deg,#e5e7eb 25%,transparent 25%),linear-gradient(-45deg,#e5e7eb 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e5e7eb 75%),linear-gradient(-45deg,transparent 75%,#e5e7eb 75%)",
@@ -338,7 +338,7 @@ export default function Perfil() {
                     <img
                       src={form.urlMarcaDagua}
                       alt="Marca d'água"
-                      className="max-h-16 max-w-[80%] object-contain"
+                      className="max-h-28 max-w-[80%] object-contain"
                     />
                   </div>
                   <div className="flex gap-2 w-full">
@@ -363,6 +363,9 @@ export default function Perfil() {
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
+                  <p className="text-[10px] text-muted-foreground text-center leading-tight">
+                    💡 Para um melhor resultado, use uma imagem em formato PNG com fundo transparente contendo apenas o logotipo da sua loja.
+                  </p>
                 </div>
               ) : (
                 <Button

@@ -48,8 +48,8 @@ export async function compressImage(
   try {
     if (opts.watermarkUrl) {
       const wmImg = await loadImageCORS(opts.watermarkUrl);
-      // largura máx ~28% da foto, preservando proporção da imagem (já transparente)
-      const wmTargetW = Math.min(wmImg.naturalWidth, Math.round(targetW * 0.28));
+      // largura máx ~15% da foto, preservando proporção da imagem (já transparente)
+      const wmTargetW = Math.min(wmImg.naturalWidth, Math.round(targetW * 0.15));
       const scale2 = wmTargetW / wmImg.naturalWidth;
       const wmW = Math.round(wmImg.naturalWidth * scale2);
       const wmH = Math.round(wmImg.naturalHeight * scale2);
