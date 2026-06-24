@@ -124,29 +124,6 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const videoInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingVideo, setUploadingVideo] = useState(false);
-  const [storeLogoUrl, setStoreLogoUrl] = useState<string | null>(null);
-  const [pendingFiles, setPendingFiles] = useState<File[]>([]);
-  const [previewOpen, setPreviewOpen] = useState(false);
-
-  // Busca a logo da loja do lojista logado para usar como marca d'água
-  useEffect(() => {
-    if (!user?.id) {
-      setStoreLogoUrl(null);
-      return;
-    }
-    let cancelled = false;
-    supabase
-      .from("profiles")
-      .select("foto_url")
-      .eq("id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!cancelled) setStoreLogoUrl((data as { foto_url?: string } | null)?.foto_url ?? null);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.id]);
 
   useEffect(() => {
     if (!open) return;
