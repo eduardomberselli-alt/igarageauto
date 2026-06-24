@@ -380,6 +380,7 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
   );
 
   return (
+    <>
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="h-[90vh] overflow-y-auto rounded-t-2xl">
         <SheetHeader className="text-left">
