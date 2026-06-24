@@ -40,7 +40,7 @@ type Props = {
 };
 
 const MAX_PHOTO_SIZE_MB = 1;
-const MAX_VIDEO_SIZE_MB = 5;
+const MAX_VIDEO_SIZE_MB = 50;
 const ACCEPTED_VIDEO_TYPES = ["video/mp4", "video/quicktime", "video/webm"];
 
 const CAMBIOS = ["Manual", "Automático", "CVT"] as const;
@@ -248,10 +248,10 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
     }
     if (file.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) {
       toast.error(
-        `❌ O arquivo de vídeo excede o limite de ${MAX_VIDEO_SIZE_MB}MB para upload direto.`,
+        `❌ O arquivo de vídeo excede o limite de ${MAX_VIDEO_SIZE_MB}MB.`,
         {
           description:
-            "Para prosseguir: 1) Reduza o arquivo em uma ferramenta gratuita (VideoPresso, Clideo, Online Converter) ou 2) Publique no YouTube/Vimeo e cole o link no campo.",
+            "💡 Dica rápida: Você pode enviar o vídeo no seu próprio WhatsApp (ou para você mesmo) e baixá-lo de volta no celular. O WhatsApp comprime o arquivo automaticamente para um tamanho super leve! Depois, tente reenviar o vídeo baixado aqui.\n\nSe preferir, publique-o no YouTube e cole o link acima.",
           duration: 10000,
         },
       );
@@ -559,7 +559,7 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
               />
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Limite para upload direto: {MAX_VIDEO_SIZE_MB}MB (.mp4, .mov, .webm). Para vídeos maiores, utilize links do YouTube.
+              Formatos aceitos: MP4, MOV, WEBM. Limite máximo: {MAX_VIDEO_SIZE_MB}MB.
             </p>
           </div>
 
@@ -577,8 +577,8 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
             />
           </div>
 
-          <Button onClick={submit} className="w-full" size="lg" disabled={uploading}>
-            {uploading ? "Enviando fotos…" : "Salvar veículo"}
+          <Button onClick={submit} className="w-full" size="lg" disabled={uploading || uploadingVideo}>
+            {uploading || uploadingVideo ? "Carregando…" : "Salvar veículo"}
           </Button>
         </div>
       </SheetContent>
