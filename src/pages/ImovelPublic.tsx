@@ -30,6 +30,7 @@ import { PhotoLightbox } from "@/components/client/PhotoLightbox";
 
 import { usePublicProperty, usePublicPropertyBySlug, registerLead } from "@/hooks/useAppData";
 import { vehiclePath, vehicleUrl } from "@/lib/vehicleUrl";
+import { ensureVehicleCard } from "@/lib/vehicleCard";
 import { useBrandColors } from "@/hooks/useBrandColors";
 import { useOptionalClientStore } from "@/contexts/ClientStoreContext";
 import { useUserMode } from "@/hooks/useUserMode";
@@ -76,6 +77,24 @@ export default function ImovelPublic() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [property?.id, isClientMode]);
 
+  // Regera o card do WhatsApp em background quando o lojista abre a prévia
+  // e os dados visíveis no card (preço/modelo/ano/cidade/loja) mudaram, ou
+  // quando o card ainda não existe.
+  useEffect(() => {
+    if (!property?.id || !isAdminMode) return;
+    ensureVehicleCard(property, ownerProfile).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    property?.id,
+    isAdminMode,
+    property?.preco,
+    property?.titulo,
+    property?.year,
+    property?.fotoUrl,
+    property?.cardSignature,
+    ownerProfile?.nome,
+  ]);
+
   useBrandColors(ownerProfile?.brandPrimaryColor, ownerProfile?.brandAccentColor, { applyTheme: true });
 
   if (loading) {
@@ -116,6 +135,14 @@ export default function ImovelPublic() {
   // URL amigável (canonical) para compartilhar
   const friendlyUrl = vehicleUrl(property, ownerProfile?.slug);
 
+  // URL versionada usada para compartilhar no WhatsApp. O parâmetro `v`
+  // (timestamp de atualização do veículo) força o WhatsApp/Facebook a
+  // ignorar o cache antigo quando o preço/modelo/ano mudar.
+  const cardVersion = encodeURIComponent(
+    property.updatedAt ?? property.publishedAt ?? String(property.preco),
+  );
+  const shareCardUrl = `https://igarageauto.vercel.app/c/${property.id}?v=${cardVersion}`;
+
   // Open Graph: título com nome + preço, descrição = nome da loja
   const ogTitle = `${property.titulo} • ${formatBRL(property.preco)}`;
   const ogDescription = storeName;
@@ -131,7 +158,8 @@ export default function ImovelPublic() {
 
   const handleShare = async () => {
     const shareText = `${property.titulo} — ${formatBRL(property.preco)}`;
-    let shareUrl = friendlyUrl;
+    // Link de compartilhamento do card do WhatsApp (versionado p/ burlar cache).
+    let shareUrl = shareCardUrl;
 
     // Tenta gerar link rastreável (não bloqueia o share se falhar)
     try {
@@ -139,7 +167,7 @@ export default function ImovelPublic() {
         body: {
           vehicle_id: property.id,
           lojista_id: property.ownerId,
-          original_url: friendlyUrl,
+          original_url: shareCardUrl,
         },
       });
       if (!error && data?.tracking_link) {
