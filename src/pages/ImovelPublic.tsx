@@ -157,7 +157,6 @@ export default function ImovelPublic() {
   };
 
   const handleShare = async () => {
-    const shareText = `${property.titulo} — ${formatBRL(property.preco)}`;
     // Link de compartilhamento do card do WhatsApp (versionado p/ burlar cache).
     let shareUrl = shareCardUrl;
 
@@ -177,6 +176,8 @@ export default function ImovelPublic() {
       // segue com a URL amigável
     }
 
+    const shareText = `${property.titulo} — ${formatBRL(property.preco)}\n\n📲 Clique na foto ou no link abaixo para ver todos os detalhes:\n${shareUrl}`;
+
     const shareData = { title: "Confira este veículo", text: shareText, url: shareUrl };
     try {
       if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
@@ -187,7 +188,7 @@ export default function ImovelPublic() {
       // usuário cancelou ou share falhou — cair no fallback
     }
     try {
-      await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
+      await navigator.clipboard.writeText(shareText);
       toast({ title: "Link copiado!", description: "Compartilhe com seus clientes." });
     } catch {
       toast({ title: "Não foi possível copiar", description: shareUrl });
