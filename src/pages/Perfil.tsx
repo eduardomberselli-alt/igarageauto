@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, Plus, LogOut, Copy, ExternalLink, Download, Upload, Loader2, Share2, Store, Sparkles, Trash2 } from "lucide-react";
+import { X, Plus, LogOut, Copy, ExternalLink, Download, Upload, Loader2, Share2, Store, Sparkles, Trash2, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { QRCodeCanvas } from "qrcode.react";
 import { Button } from "@/components/ui/button";
@@ -69,14 +69,21 @@ export default function Perfil() {
     websiteUrl: "",
     urlMarcaDagua: "",
     logoLojaUrl: "",
+    urlCardWhatsapp: "",
   });
   const [novaInfo, setNovaInfo] = useState("");
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [generatingWm, setGeneratingWm] = useState(false);
+  const [generatingCard, setGeneratingCard] = useState(false);
+  const [cardTitulo, setCardTitulo] = useState("");
+  const [cardFrase, setCardFrase] = useState("");
+  const [cardBgUrl, setCardBgUrl] = useState<string>("");
+  const [uploadingCardBg, setUploadingCardBg] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const cardBgInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (profile) {
@@ -98,7 +105,9 @@ export default function Perfil() {
         websiteUrl: profile.websiteUrl ?? "",
         urlMarcaDagua: profile.urlMarcaDagua ?? "",
         logoLojaUrl: (profile as any).logoLojaUrl ?? "",
+        urlCardWhatsapp: (profile as any).urlCardWhatsapp ?? "",
       });
+      if (!cardTitulo) setCardTitulo(profile.nome ?? "");
     }
   }, [profile]);
 
@@ -131,6 +140,7 @@ export default function Perfil() {
     websiteUrl: form.websiteUrl.trim() || null,
     urlMarcaDagua: form.urlMarcaDagua.trim() || null,
     logoLojaUrl: form.logoLojaUrl.trim() || null,
+    urlCardWhatsapp: form.urlCardWhatsapp.trim() || null,
   });
 
   const handleSave = async () => {
