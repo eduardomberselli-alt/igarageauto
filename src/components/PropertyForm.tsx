@@ -187,7 +187,8 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
     }
 
     setUploading(true);
-    const processed: File[] = [];
+    const folder = initial?.id ?? user.id;
+    const uploaded: string[] = [];
     for (const original of list) {
       if (!original.type.startsWith("image/")) {
         toast.error(`"${original.name}" não é uma imagem`);
@@ -198,9 +199,6 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
         file = await compressImage(original, {
           maxBytes: MAX_PHOTO_SIZE_MB * 1024 * 1024,
           maxDimension: 1920,
-          watermarkUrl: storeLogoUrl,
-          watermarkOpacity: 0.8,
-          watermarkScale: 0.28,
         });
       } catch {
         // mantém o original
@@ -209,27 +207,6 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
         toast.error(`"${original.name}" não pôde ser reduzida para ${MAX_PHOTO_SIZE_MB}MB`);
         continue;
       }
-      processed.push(file);
-    }
-    setUploading(false);
-    if (fileInputRef.current) fileInputRef.current.value = "";
-
-    if (processed.length === 0) return;
-    setPendingFiles(processed);
-    setPreviewOpen(true);
-  };
-
-  const cancelPreview = () => {
-    setPreviewOpen(false);
-    setPendingFiles([]);
-  };
-
-  const confirmPreviewUpload = async () => {
-    if (!user || pendingFiles.length === 0) return;
-    setUploading(true);
-    const folder = initial?.id ?? user.id;
-    const uploaded: string[] = [];
-    for (const file of pendingFiles) {
       const ext = (file.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
       const path = `${user.id}/${folder}/${Date.now()}-${Math.random()
         .toString(36)
@@ -249,8 +226,7 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
       toast.success(`${uploaded.length} foto(s) enviada(s)`);
     }
     setUploading(false);
-    setPendingFiles([]);
-    setPreviewOpen(false);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const removeFoto = (idx: number) => setFotos(form.fotosUrls.filter((_, i) => i !== idx));
