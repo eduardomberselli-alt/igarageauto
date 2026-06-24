@@ -340,6 +340,7 @@ export type Database = {
           especialidades: string[]
           facebook_url: string | null
           foto_url: string
+          frase_chamada: string | null
           id: string
           instagram_url: string | null
           linkedin_url: string | null
@@ -365,6 +366,7 @@ export type Database = {
           especialidades?: string[]
           facebook_url?: string | null
           foto_url?: string
+          frase_chamada?: string | null
           id?: string
           instagram_url?: string | null
           linkedin_url?: string | null
@@ -390,6 +392,7 @@ export type Database = {
           especialidades?: string[]
           facebook_url?: string | null
           foto_url?: string
+          frase_chamada?: string | null
           id?: string
           instagram_url?: string | null
           linkedin_url?: string | null
