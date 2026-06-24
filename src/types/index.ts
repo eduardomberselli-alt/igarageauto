@@ -32,7 +32,7 @@ export type Property = {
   createdAt?: string | null;
 };
 
-export const MAX_PROPERTY_PHOTOS = 5;
+export const MAX_PROPERTY_PHOTOS = 10;
 
 export const DIFERENCIAIS_PRESET = [
   "Piscina",
