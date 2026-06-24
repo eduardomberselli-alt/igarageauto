@@ -147,7 +147,7 @@ export async function generateWatermarkPng(
   opts: { maxWidth?: number; opacity?: number } = {},
 ): Promise<Blob> {
   const maxWidth = opts.maxWidth ?? 200;
-  const opacity = opts.opacity ?? 0.18;
+  const opacity = opts.opacity ?? 0.75;
   const img = await loadImageCORS(logoUrl);
   const scale = Math.min(1, maxWidth / img.naturalWidth);
   const w = Math.max(1, Math.round(img.naturalWidth * scale));
