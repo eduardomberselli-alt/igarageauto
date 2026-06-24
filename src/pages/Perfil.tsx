@@ -365,6 +365,48 @@ export default function Perfil() {
             {/* Marca d'água automática */}
             <div className="mt-4 w-full max-w-xs rounded-2xl border border-border bg-card p-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 text-center">
+                Logotipo da Loja
+              </p>
+              <div
+                className="h-24 w-full rounded-lg border border-border flex items-center justify-center overflow-hidden mb-2"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(45deg,#e5e7eb 25%,transparent 25%),linear-gradient(-45deg,#e5e7eb 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e5e7eb 75%),linear-gradient(-45deg,transparent 75%,#e5e7eb 75%)",
+                  backgroundSize: "12px 12px",
+                  backgroundPosition: "0 0,0 6px,6px -6px,-6px 0",
+                }}
+              >
+                {form.logoLojaUrl ? (
+                  <img src={form.logoLojaUrl} alt="Logotipo da loja" className="max-h-20 max-w-[80%] object-contain" />
+                ) : (
+                  <span className="text-[11px] text-muted-foreground">Nenhum logotipo enviado</span>
+                )}
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="w-full"
+                onClick={() => logoInputRef.current?.click()}
+                disabled={uploadingLogo}
+              >
+                {uploadingLogo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                {form.logoLojaUrl ? "Trocar logotipo" : "Enviar logotipo"}
+              </Button>
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleLogoUpload}
+              />
+              <p className="mt-2 text-[10px] text-muted-foreground text-center leading-tight">
+                Suba aqui o logo da sua loja (de preferência em formato PNG com fundo transparente) para ser usado na geração da marca d'água das fotos.
+              </p>
+
+              <div className="my-3 h-px bg-border" />
+
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 text-center">
                 Marca d'água nas fotos
               </p>
               {form.urlMarcaDagua ? (
