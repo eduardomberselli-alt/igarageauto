@@ -109,7 +109,8 @@ function loadImageCORS(url: string): Promise<HTMLImageElement> {
     img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
     img.onerror = (e) => reject(e);
-    img.src = url;
+    const sep = url.includes("?") ? "&" : "?";
+    img.src = `${url}${sep}cb=${Date.now()}`;
   });
 }
 
