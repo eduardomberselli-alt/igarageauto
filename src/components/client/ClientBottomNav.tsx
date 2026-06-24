@@ -18,7 +18,7 @@ const TABS: Tab[] = [
   { key: "academy", label: "Academy", icon: GraduationCap, global: "/academy" },
   { key: "salvos", label: "Salvos", icon: Heart },
   { key: "sobre", label: "Loja", icon: Store },
-] as const;
+];
 
 export function ClientBottomNav() {
   const slug = useNavStoreSlug();
