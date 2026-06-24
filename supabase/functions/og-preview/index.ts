@@ -17,7 +17,6 @@ const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 // URL pública da app (onde o usuário humano vai parar)
 const APP_BASE_URL = "https://igarageauto.vercel.app";
 
-// Imagem Open Graph padrão do projeto (1200x630).
 const DEFAULT_OG_IMAGE = `${APP_BASE_URL}/og-default.png`;
 const BRAND_OG_IMAGE = DEFAULT_OG_IMAGE;
 
@@ -40,6 +39,75 @@ function escapeHtml(s: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+/**
+ * Injeta meta tags dinâmicas no index.html estático substituindo todos os
+ * blocos og:* / twitter:* / <title> / <meta name="description"> por valores
+ * vindos do Supabase (loja, veículo, convite...).
+ */
+function injectMetaTags(
+  baseHtml: string,
+  args: { title: string; description: string; image: string; canonical: string },
+): string {
+  const { title, description, image, canonical } = args;
+  const t = escapeHtml(title);
+  const d = escapeHtml(description);
+  const img = escapeHtml(image);
+  const url = escapeHtml(canonical);
+
+  const injected = `<title>${t}</title>
+    <meta name="description" content="${d}" />
+    <link rel="canonical" href="${url}" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="${url}" />
+    <meta property="og:title" content="${t}" />
+    <meta property="og:description" content="${d}" />
+    <meta property="og:image" content="${img}" />
+    <meta property="og:image:secure_url" content="${img}" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:alt" content="${t}" />
+    <meta property="og:site_name" content="Garage" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="${url}" />
+    <meta name="twitter:title" content="${t}" />
+    <meta name="twitter:description" content="${d}" />
+    <meta name="twitter:image" content="${img}" />`;
+
+  let html = baseHtml;
+  // Remove o título e meta tags antigas que vão ser substituídas.
+  html = html.replace(/<title>[\s\S]*?<\/title>/i, "");
+  html = html.replace(/<meta\s+name="description"[^>]*>/gi, "");
+  html = html.replace(/<link\s+rel="canonical"[^>]*>/gi, "");
+  html = html.replace(/<meta\s+property="og:[^"]+"[^>]*>/gi, "");
+  html = html.replace(/<meta\s+property="twitter:[^"]+"[^>]*>/gi, "");
+  html = html.replace(/<meta\s+name="twitter:[^"]+"[^>]*>/gi, "");
+  // Insere o novo bloco logo após <head>.
+  html = html.replace(/<head>/i, `<head>\n    ${injected}`);
+  return html;
+}
+
+let cachedIndexHtml: string | null = null;
+async function loadIndexHtml(): Promise<string> {
+  if (cachedIndexHtml) return cachedIndexHtml;
+  try {
+    const res = await fetch(`${APP_BASE_URL}/index.html`, {
+      headers: { "User-Agent": "og-preview-loader" },
+    });
+    if (res.ok) {
+      const txt = await res.text();
+      // Cache simples em memória da instância da função.
+      cachedIndexHtml = txt;
+      return txt;
+    }
+  } catch (e) {
+    console.error("loadIndexHtml fetch failed", e);
+  }
+  // Fallback mínimo se o app ainda não estiver publicado.
+  return `<!doctype html><html lang="pt-BR"><head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /></head><body><div id="root"></div></body></html>`;
 }
 
 /** Acrescenta um query param de cache-buster para forçar o WhatsApp/Facebook a atualizar a prévia. */
@@ -186,15 +254,22 @@ Deno.serve(async (req) => {
     else if (slug) {
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug);
       const profQuery = isUuid
-        ? client.from("profiles").select("user_id, nome, slug, updated_at").eq("user_id", slug)
-        : client.from("profiles").select("user_id, nome, slug, updated_at").eq("slug", slug);
+        ? client
+            .from("profiles")
+            .select("user_id, nome, slug, updated_at, frase_chamada, url_card_whatsapp")
+            .eq("user_id", slug)
+        : client
+            .from("profiles")
+            .select("user_id, nome, slug, updated_at, frase_chamada, url_card_whatsapp")
+            .eq("slug", slug);
       const { data: prof } = await profQuery.maybeSingle();
 
       if (prof?.user_id) {
         const nome = prof.nome?.trim() || "Loja parceira";
         title = nome;
-        description = "Confira nosso estoque e fale com a nossa equipe.";
-        image = ogStoreImage(prof.slug ?? slug, prof.updated_at);
+        description = (prof.frase_chamada as string | null)?.trim()
+          || "Confira nosso estoque completo!";
+        image = (prof.url_card_whatsapp as string | null) || BRAND_OG_IMAGE;
       }
       canonical = `${APP_BASE_URL}/p/${encodeURIComponent(slug)}`;
       redirect = canonical;
@@ -241,15 +316,15 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Crawler -> HTML com OG tags. Humano -> redirect 302 direto.
+    // Crawler -> HTML com OG tags injetadas no index.html. Humano -> redirect 302.
     if (isCrawler(ua)) {
-      const html = buildHtml({ title, description, image, canonical, redirect });
+      const baseHtml = await loadIndexHtml();
+      const html = injectMetaTags(baseHtml, { title, description, image, canonical });
       return new Response(html, {
         status: 200,
         headers: {
           ...corsHeaders,
           "Content-Type": "text/html; charset=utf-8",
-          // Cache curto para crawlers respeitarem mudanças de foto rapidamente.
           "Cache-Control": "public, max-age=120, s-maxage=120",
         },
       });
