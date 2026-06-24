@@ -26,6 +26,7 @@ import { FavoriteButton } from "@/components/FavoriteButton";
 import { ClientSocialLinks } from "@/components/client/ClientSocialLinks";
 import { WhatsAppChatBubble } from "@/components/client/WhatsAppChatBubble";
 import { StoreLogo } from "@/components/client/StoreLogo";
+import { PhotoLightbox } from "@/components/client/PhotoLightbox";
 
 import { usePublicProperty, usePublicPropertyBySlug, registerLead } from "@/hooks/useAppData";
 import { vehiclePath, vehicleUrl } from "@/lib/vehicleUrl";
@@ -49,6 +50,7 @@ export default function ImovelPublic() {
   const { property, ownerProfile, loading } = isSlugRoute ? bySlug : byId;
   const [activePhoto, setActivePhoto] = useState(0);
   const [activeVideo, setActiveVideo] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const clientStoreCtx = useOptionalClientStore();
   const { isAdminMode, isClientMode } = useUserMode(property?.ownerId);
 
@@ -248,7 +250,12 @@ export default function ImovelPublic() {
       {/* 1. HERO — IMAGEM PRINCIPAL FULLSCREEN */}
       <div className="relative w-full bg-muted overflow-hidden" style={{ height: "min(58vh, 400px)" }}>
         {cover ? (
-          <img src={cover} alt={property.titulo} className="h-full w-full object-cover" />
+          <img
+            src={cover}
+            alt={property.titulo}
+            onClick={() => setLightboxOpen(true)}
+            className="h-full w-full object-cover cursor-zoom-in"
+          />
         ) : (
           <div className="h-full w-full flex flex-col items-center justify-center bg-gradient-to-br from-muted to-card">
             <Car className="h-16 w-16 text-muted-foreground/40" />
@@ -289,6 +296,15 @@ export default function ImovelPublic() {
           <FavoriteButton vehicleId={property.id} size="md" />
         </div>
       </div>
+
+      <PhotoLightbox
+        open={lightboxOpen}
+        photos={fotos}
+        index={activePhoto}
+        onClose={() => setLightboxOpen(false)}
+        onIndexChange={setActivePhoto}
+        alt={property.titulo}
+      />
 
       {/* 2. MINIATURAS */}
       {fotos.length > 1 && (
