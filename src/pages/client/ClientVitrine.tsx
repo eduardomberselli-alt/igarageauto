@@ -33,7 +33,7 @@ export default function ClientVitrine() {
     return sorted;
   }, [properties, filter]);
 
-  const storeUrl = `https://igarageauto.vercel.app/p/${lojaSlug ?? profile?.slug ?? ""}`;
+  const urlAtual = `https://igarageauto.vercel.app/p/${lojaSlug ?? profile?.slug ?? ""}`;
   const nomeLoja = profile?.nome || "Garage";
   const descricaoLoja = profile?.fraseChamada || "Confira nosso estoque completo!";
   const imagemCard =
