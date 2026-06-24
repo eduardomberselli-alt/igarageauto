@@ -273,6 +273,43 @@ export default function Perfil() {
     }
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const original = e.target.files?.[0];
+    if (!original || !user) return;
+    if (!original.type.startsWith("image/")) {
+      toast.error("Selecione um arquivo de imagem");
+      return;
+    }
+    setUploadingLogo(true);
+    try {
+      // Não comprimir PNG transparente para preservar canal alfa
+      const isPng = original.type === "image/png";
+      let file = original;
+      if (!isPng) {
+        try {
+          file = await compressImage(original, { maxBytes: 2 * 1024 * 1024, maxDimension: 1024 });
+        } catch { /* mantém original */ }
+      }
+      const ext = (file.type.split("/")[1] || "png").replace("jpeg", "jpg");
+      const path = `${user.id}/logo-loja-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { cacheControl: "3600", upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+      const publicUrl = data.publicUrl;
+      setForm((p) => ({ ...p, logoLojaUrl: publicUrl }));
+      const err = await save({ ...buildPayload(), logoLojaUrl: publicUrl } as any);
+      if (err) throw err;
+      toast.success("Logotipo da loja enviado");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao enviar logotipo");
+    } finally {
+      setUploadingLogo(false);
+      if (logoInputRef.current) logoInputRef.current.value = "";
+    }
+  };
+
   return (
     <div className="px-4 pt-6 pb-4">
       <header className="mb-5 flex items-center justify-between gap-2">
