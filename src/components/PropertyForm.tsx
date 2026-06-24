@@ -39,7 +39,9 @@ type Props = {
   onSave: (p: PropertyFormValues, id?: string) => void;
 };
 
-const MAX_SIZE_MB = 5;
+const MAX_PHOTO_SIZE_MB = 1;
+const MAX_VIDEO_SIZE_MB = 5;
+const ACCEPTED_VIDEO_TYPES = ["video/mp4", "video/quicktime", "video/webm"];
 
 const CAMBIOS = ["Manual", "Automático", "CVT"] as const;
 const COMBUSTIVEIS = ["Flex", "Gasolina", "Diesel", "Elétrico", "Híbrido"] as const;
@@ -120,6 +122,8 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
   const [restDif, setRestDif] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const videoInputRef = useRef<HTMLInputElement | null>(null);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -193,12 +197,15 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
       }
       let file = original;
       try {
-        file = await compressImage(original, { maxBytes: MAX_SIZE_MB * 1024 * 1024 });
+        file = await compressImage(original, {
+          maxBytes: MAX_PHOTO_SIZE_MB * 1024 * 1024,
+          maxDimension: 1920,
+        });
       } catch {
         // mantém o original
       }
-      if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-        toast.error(`"${original.name}" não pôde ser reduzida para ${MAX_SIZE_MB}MB`);
+      if (file.size > MAX_PHOTO_SIZE_MB * 1024 * 1024) {
+        toast.error(`"${original.name}" não pôde ser reduzida para ${MAX_PHOTO_SIZE_MB}MB`);
         continue;
       }
 
@@ -228,6 +235,58 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
   };
 
   const removeFoto = (idx: number) => setFotos(form.fotosUrls.filter((_, i) => i !== idx));
+
+  const handleVideoFile = async (files: FileList | null) => {
+    const file = files?.[0];
+    if (!file) return;
+    if (!user) {
+      toast.error("Faça login para enviar vídeos");
+      return;
+    }
+    const isAccepted =
+      ACCEPTED_VIDEO_TYPES.includes(file.type) ||
+      /\.(mp4|mov|webm)$/i.test(file.name);
+    if (!isAccepted) {
+      toast.error("Formato inválido. Use .mp4, .mov ou .webm");
+      if (videoInputRef.current) videoInputRef.current.value = "";
+      return;
+    }
+    if (file.size > MAX_VIDEO_SIZE_MB * 1024 * 1024) {
+      toast.error(
+        `❌ O arquivo de vídeo excede o limite de ${MAX_VIDEO_SIZE_MB}MB para upload direto.`,
+        {
+          description:
+            "Para prosseguir: 1) Reduza o arquivo em uma ferramenta gratuita (VideoPresso, Clideo, Online Converter) ou 2) Publique no YouTube/Vimeo e cole o link no campo.",
+          duration: 10000,
+        },
+      );
+      if (videoInputRef.current) videoInputRef.current.value = "";
+      return;
+    }
+    setUploadingVideo(true);
+    try {
+      const folder = initial?.id ?? user.id;
+      const ext = (file.name.split(".").pop() || "mp4").toLowerCase();
+      const path = `${user.id}/${folder}/videos/${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2, 8)}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("properties")
+        .upload(path, file, { upsert: false, contentType: file.type || `video/${ext}` });
+      if (upErr) {
+        toast.error(`Falha ao enviar vídeo: ${upErr.message}`);
+        return;
+      }
+      const { data: pub } = supabase.storage.from("properties").getPublicUrl(path);
+      if (pub?.publicUrl) {
+        updateMeta("video", pub.publicUrl);
+        toast.success("Vídeo enviado");
+      }
+    } finally {
+      setUploadingVideo(false);
+      if (videoInputRef.current) videoInputRef.current.value = "";
+    }
+  };
 
   const makeCover = (idx: number) => {
     if (idx === 0) return;
@@ -478,8 +537,34 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
             <Input
               value={meta.video}
               onChange={(e) => updateMeta("video", e.target.value)}
-              placeholder="Link do YouTube ou vídeo do carro"
+              placeholder="Cole um link do YouTube/Vimeo ou envie um arquivo"
             />
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={uploadingVideo}
+                onClick={() => videoInputRef.current?.click()}
+              >
+                {uploadingVideo ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Upload className="h-4 w-4" />
+                )}
+                {uploadingVideo ? "Enviando…" : "Enviar arquivo de vídeo"}
+              </Button>
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.webm"
+                hidden
+                onChange={(e) => handleVideoFile(e.target.files)}
+              />
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              Limite para upload direto: {MAX_VIDEO_SIZE_MB}MB (.mp4, .mov, .webm). Para vídeos maiores, utilize links do YouTube.
+            </p>
           </div>
 
           {/* Vendido */}
