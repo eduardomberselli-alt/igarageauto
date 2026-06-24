@@ -68,12 +68,15 @@ export default function Perfil() {
     linkedinUrl: "",
     websiteUrl: "",
     urlMarcaDagua: "",
+    logoLojaUrl: "",
   });
   const [novaInfo, setNovaInfo] = useState("");
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [generatingWm, setGeneratingWm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (profile) {
@@ -94,6 +97,7 @@ export default function Perfil() {
         linkedinUrl: profile.linkedinUrl ?? "",
         websiteUrl: profile.websiteUrl ?? "",
         urlMarcaDagua: profile.urlMarcaDagua ?? "",
+        logoLojaUrl: (profile as any).logoLojaUrl ?? "",
       });
     }
   }, [profile]);
@@ -126,6 +130,7 @@ export default function Perfil() {
     linkedinUrl: form.linkedinUrl.trim() || null,
     websiteUrl: form.websiteUrl.trim() || null,
     urlMarcaDagua: form.urlMarcaDagua.trim() || null,
+    logoLojaUrl: form.logoLojaUrl.trim() || null,
   });
 
   const handleSave = async () => {
@@ -141,13 +146,14 @@ export default function Perfil() {
   };
 
   const handleGenerateWatermark = async () => {
-    if (!form.fotoUrl || !user) {
-      toast.error("Envie a logo da loja primeiro");
+    if (!user) return;
+    if (!form.logoLojaUrl) {
+      toast.error("Por favor, faça o upload do Logotipo da Loja primeiro.");
       return;
     }
     setGeneratingWm(true);
     try {
-      const blob = await generateWatermarkPng(form.fotoUrl, { maxWidth: 200, opacity: 0.18 });
+      const blob = await generateWatermarkPng(form.logoLojaUrl, { maxWidth: 200, opacity: 0.18 });
       const path = `${user.id}/watermarks/watermark-${Date.now()}.png`;
       const { error: upErr } = await supabase.storage
         .from("avatars")
@@ -267,6 +273,43 @@ export default function Perfil() {
     }
   };
 
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const original = e.target.files?.[0];
+    if (!original || !user) return;
+    if (!original.type.startsWith("image/")) {
+      toast.error("Selecione um arquivo de imagem");
+      return;
+    }
+    setUploadingLogo(true);
+    try {
+      // Não comprimir PNG transparente para preservar canal alfa
+      const isPng = original.type === "image/png";
+      let file = original;
+      if (!isPng) {
+        try {
+          file = await compressImage(original, { maxBytes: 2 * 1024 * 1024, maxDimension: 1024 });
+        } catch { /* mantém original */ }
+      }
+      const ext = (file.type.split("/")[1] || "png").replace("jpeg", "jpg");
+      const path = `${user.id}/logo-loja-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { cacheControl: "3600", upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+      const publicUrl = data.publicUrl;
+      setForm((p) => ({ ...p, logoLojaUrl: publicUrl }));
+      const err = await save({ ...buildPayload(), logoLojaUrl: publicUrl } as any);
+      if (err) throw err;
+      toast.success("Logotipo da loja enviado");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao enviar logotipo");
+    } finally {
+      setUploadingLogo(false);
+      if (logoInputRef.current) logoInputRef.current.value = "";
+    }
+  };
+
   return (
     <div className="px-4 pt-6 pb-4">
       <header className="mb-5 flex items-center justify-between gap-2">
@@ -322,6 +365,48 @@ export default function Perfil() {
             {/* Marca d'água automática */}
             <div className="mt-4 w-full max-w-xs rounded-2xl border border-border bg-card p-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 text-center">
+                Logotipo da Loja
+              </p>
+              <div
+                className="h-24 w-full rounded-lg border border-border flex items-center justify-center overflow-hidden mb-2"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(45deg,#e5e7eb 25%,transparent 25%),linear-gradient(-45deg,#e5e7eb 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e5e7eb 75%),linear-gradient(-45deg,transparent 75%,#e5e7eb 75%)",
+                  backgroundSize: "12px 12px",
+                  backgroundPosition: "0 0,0 6px,6px -6px,-6px 0",
+                }}
+              >
+                {form.logoLojaUrl ? (
+                  <img src={form.logoLojaUrl} alt="Logotipo da loja" className="max-h-20 max-w-[80%] object-contain" />
+                ) : (
+                  <span className="text-[11px] text-muted-foreground">Nenhum logotipo enviado</span>
+                )}
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="w-full"
+                onClick={() => logoInputRef.current?.click()}
+                disabled={uploadingLogo}
+              >
+                {uploadingLogo ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+                {form.logoLojaUrl ? "Trocar logotipo" : "Enviar logotipo"}
+              </Button>
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleLogoUpload}
+              />
+              <p className="mt-2 text-[10px] text-muted-foreground text-center leading-tight">
+                Suba aqui o logo da sua loja (de preferência em formato PNG com fundo transparente) para ser usado na geração da marca d'água das fotos.
+              </p>
+
+              <div className="my-3 h-px bg-border" />
+
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 text-center">
                 Marca d'água nas fotos
               </p>
               {form.urlMarcaDagua ? (
@@ -348,7 +433,7 @@ export default function Perfil() {
                       variant="outline"
                       className="flex-1"
                       onClick={handleGenerateWatermark}
-                      disabled={generatingWm || !form.fotoUrl}
+                      disabled={generatingWm || !form.logoLojaUrl}
                     >
                       {generatingWm ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                       Regenerar
@@ -373,7 +458,7 @@ export default function Perfil() {
                   size="sm"
                   className="w-full"
                   onClick={handleGenerateWatermark}
-                  disabled={generatingWm || !form.fotoUrl}
+                  disabled={generatingWm || !form.logoLojaUrl}
                 >
                   {generatingWm ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
