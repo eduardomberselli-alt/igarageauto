@@ -433,6 +433,9 @@ export function usePublicPropertyBySlug(lojaSlug: string | undefined, vehicleSlu
         whatsappClicksToday: (p as any).whatsapp_clicks_today ?? 0,
         lastPrice: (p as any).last_price != null ? Number((p as any).last_price) : null,
         publishedAt: (p as any).published_at ?? null,
+        updatedAt: (p as any).updated_at ?? null,
+        urlCardWhatsapp: (p as any).url_card_whatsapp ?? null,
+        cardSignature: (p as any).card_signature ?? null,
         videos: ((p.videos as any[]) ?? []).map((v) => ({
           id: v.id,
           titulo: v.titulo,
@@ -458,6 +461,7 @@ export function usePublicPropertyBySlug(lojaSlug: string | undefined, vehicleSlu
         websiteUrl: (prof as any).website_url ?? null,
         brandPrimaryColor: (prof as any).brand_primary_color ?? "#722F37",
         brandAccentColor: (prof as any).brand_accent_color ?? "#D4AF37",
+        logoLojaUrl: (prof as any).logo_loja_url ?? null,
       });
       setLoading(false);
     })();
