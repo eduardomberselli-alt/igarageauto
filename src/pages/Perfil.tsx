@@ -167,7 +167,7 @@ export default function Perfil() {
     }
     setGeneratingWm(true);
     try {
-      const blob = await generateWatermarkPng(form.logoLojaUrl, { maxWidth: 200, opacity: 0.30 });
+      const blob = await generateWatermarkPng(form.logoLojaUrl, { maxWidth: 200, opacity: 0.75 });
       const path = `${user.id}/watermarks/watermark-${Date.now()}.png`;
       const { error: upErr } = await supabase.storage
         .from("avatars")
