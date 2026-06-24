@@ -153,7 +153,7 @@ export default function Perfil() {
     }
     setGeneratingWm(true);
     try {
-      const blob = await generateWatermarkPng(form.logoLojaUrl, { maxWidth: 200, opacity: 0.18 });
+      const blob = await generateWatermarkPng(form.logoLojaUrl, { maxWidth: 200, opacity: 0.30 });
       const path = `${user.id}/watermarks/watermark-${Date.now()}.png`;
       const { error: upErr } = await supabase.storage
         .from("avatars")
@@ -469,7 +469,7 @@ export default function Perfil() {
                 </Button>
               )}
               <p className="mt-2 text-[10px] text-muted-foreground text-center leading-tight">
-                Gera uma versão da sua logo com 18% de opacidade, aplicada no centro das fotos dos veículos.
+                Gera uma versão da sua logo com 30% de opacidade, aplicada no centro das fotos dos veículos.
               </p>
             </div>
           </div>

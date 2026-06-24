@@ -61,7 +61,7 @@ export async function compressImage(
     } else if (opts.watermarkText) {
       const fontSize = Math.max(28, Math.round(targetW * 0.05));
       ctx.save();
-      ctx.globalAlpha = 0.18;
+      ctx.globalAlpha = 0.30;
       ctx.fillStyle = "#ffffff";
       ctx.strokeStyle = "rgba(0,0,0,0.4)";
       ctx.lineWidth = Math.max(2, Math.round(fontSize / 16));
