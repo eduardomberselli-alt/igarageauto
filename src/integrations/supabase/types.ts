@@ -343,6 +343,7 @@ export type Database = {
           id: string
           instagram_url: string | null
           linkedin_url: string | null
+          logo_loja_url: string | null
           maps_url: string | null
           nome: string
           slug: string | null
@@ -366,6 +367,7 @@ export type Database = {
           id?: string
           instagram_url?: string | null
           linkedin_url?: string | null
+          logo_loja_url?: string | null
           maps_url?: string | null
           nome?: string
           slug?: string | null
@@ -389,6 +391,7 @@ export type Database = {
           id?: string
           instagram_url?: string | null
           linkedin_url?: string | null
+          logo_loja_url?: string | null
           maps_url?: string | null
           nome?: string
           slug?: string | null
