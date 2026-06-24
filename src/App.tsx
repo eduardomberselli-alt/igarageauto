@@ -30,6 +30,7 @@ import ClientBuscar from "./pages/client/ClientBuscar";
 import ClientSalvos from "./pages/client/ClientSalvos";
 import ClientLoja from "./pages/client/ClientLoja";
 import ClientVehicleRedirect from "./pages/client/ClientVehicleRedirect";
+import ClientAcademy from "./pages/client/ClientAcademy";
 import Auth from "./pages/Auth";
 import AdminCorretores from "./pages/admin/AdminCorretores";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -80,6 +81,10 @@ const App = () => (
                 <Route path="/loja/:lojaSlug/buscar" element={<ClientBuscar />} />
                 <Route path="/loja/:lojaSlug/salvos" element={<ClientSalvos />} />
                 <Route path="/loja/:lojaSlug/sobre" element={<ClientLoja />} />
+                {/* Garage Academy — global, modo cliente */}
+                <Route path="/academy" element={<ClientAcademy />} />
+                <Route path="/academy/video/:id" element={<ClientAcademy />} />
+                <Route path="/academy/:category" element={<ClientAcademy />} />
                 {/* URL amigável canônica (loja + veículo) — por último para não eclipsar rotas estáticas */}
                 <Route path="/:lojaSlug/:veiculoSlug" element={<ImovelPublic />} />
               </Route>

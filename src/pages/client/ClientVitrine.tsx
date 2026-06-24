@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ClientHeader } from "@/components/client/ClientHeader";
 import { ClientVehicleCard } from "@/components/client/ClientVehicleCard";
+import { AcademyHomeCard } from "@/components/academy/AcademyHomeCard";
 import { SeoTags } from "@/components/SeoTags";
 import { usePublicPortfolio } from "@/hooks/usePublicPortfolio";
 
@@ -88,9 +89,21 @@ export default function ClientVitrine() {
         )}
 
         <div className="grid grid-cols-1 gap-3">
-          {filtered.map((p) => (
-            <ClientVehicleCard key={p.id} property={p} ownerSlug={profile?.slug} />
-          ))}
+          {filtered.map((p, idx) => {
+            const card = (
+              <ClientVehicleCard key={p.id} property={p} ownerSlug={profile?.slug} />
+            );
+            if (idx === 1) {
+              return (
+                <div key={p.id} className="contents">
+                  {card}
+                  <AcademyHomeCard />
+                </div>
+              );
+            }
+            return card;
+          })}
+          {filtered.length > 0 && filtered.length < 2 && <AcademyHomeCard />}
         </div>
       </main>
     </>
