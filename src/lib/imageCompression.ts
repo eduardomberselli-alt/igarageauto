@@ -13,20 +13,11 @@ export async function compressImage(
     maxBytes?: number;
     maxDimension?: number;
     qualitySteps?: number[];
-    watermarkUrl?: string | null;
-    watermarkText?: string | null;
-    watermarkOpacity?: number;
-    watermarkScale?: number; // largura da logo relativa à largura da foto (0-1)
-    watermarkPosition?: "bottom-right" | "bottom-left";
   } = {},
 ): Promise<File> {
   const maxBytes = opts.maxBytes ?? 5 * 1024 * 1024;
   const maxDimension = opts.maxDimension ?? 2000;
   const qualitySteps = opts.qualitySteps ?? [0.85, 0.75, 0.65, 0.5];
-  const watermarkOpacity = opts.watermarkOpacity ?? 0.8;
-  const watermarkScale = opts.watermarkScale ?? 0.18;
-  const watermarkPosition = opts.watermarkPosition ?? "bottom-right";
-  const hasWatermark = !!(opts.watermarkUrl || opts.watermarkText);
 
   if (!file.type.startsWith("image/")) return file;
   // SVG/GIF: não comprime (perderia animação/vetor)
@@ -41,8 +32,8 @@ export async function compressImage(
   const targetW = Math.round(width * scale);
   const targetH = Math.round(height * scale);
 
-  // Se já cabe E não precisa redimensionar E não há marca d'água, retorna original.
-  if (file.size <= maxBytes && scale === 1 && !hasWatermark) {
+  // Se já cabe E não precisa redimensionar, retorna original.
+  if (file.size <= maxBytes && scale === 1) {
     bitmap.close?.();
     return file;
   }

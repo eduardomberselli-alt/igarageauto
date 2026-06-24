@@ -124,29 +124,6 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const videoInputRef = useRef<HTMLInputElement | null>(null);
   const [uploadingVideo, setUploadingVideo] = useState(false);
-  const [storeLogoUrl, setStoreLogoUrl] = useState<string | null>(null);
-
-  // Busca a logo da loja para usar como marca d'água nas fotos
-  useEffect(() => {
-    if (!user?.id) {
-      setStoreLogoUrl(null);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("foto_url")
-        .eq("user_id", user.id)
-        .maybeSingle();
-      if (!cancelled) {
-        setStoreLogoUrl((data as any)?.foto_url ?? null);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [user?.id]);
 
   useEffect(() => {
     if (!open) return;
@@ -223,11 +200,6 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
         file = await compressImage(original, {
           maxBytes: MAX_PHOTO_SIZE_MB * 1024 * 1024,
           maxDimension: 1920,
-          watermarkUrl: storeLogoUrl,
-          watermarkText: storeLogoUrl ? null : "Garage",
-          watermarkOpacity: 0.8,
-          watermarkScale: 0.18,
-          watermarkPosition: "bottom-right",
         });
       } catch {
         // mantém o original
