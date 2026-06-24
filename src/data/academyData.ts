@@ -222,17 +222,13 @@ export function getVideoById(id: string) {
 // Compat: exporta a lista atual (não-reativa). Para reatividade use os hooks.
 export const academyCategories = new Proxy([] as AcademyCategory[], {
   get(_t, prop) {
-    const arr = state.categories;
-    // @ts-expect-error proxy passthrough
-    return arr[prop];
+    return (state.categories as unknown as Record<PropertyKey, unknown>)[prop];
   },
 }) as AcademyCategory[];
 
 export const academyVideos = new Proxy([] as AcademyVideo[], {
   get(_t, prop) {
-    const arr = state.videos;
-    // @ts-expect-error proxy passthrough
-    return arr[prop];
+    return (state.videos as unknown as Record<PropertyKey, unknown>)[prop];
   },
 }) as AcademyVideo[];
 
