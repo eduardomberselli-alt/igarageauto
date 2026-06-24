@@ -70,6 +70,7 @@ export default function Perfil() {
     urlMarcaDagua: "",
     logoLojaUrl: "",
     urlCardWhatsapp: "",
+    fraseChamada: "",
   });
   const [novaInfo, setNovaInfo] = useState("");
   const [busy, setBusy] = useState(false);
