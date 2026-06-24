@@ -313,8 +313,13 @@ export default function Perfil() {
       if (upErr) throw upErr;
       const { data } = supabase.storage.from("avatars").getPublicUrl(path);
       const publicUrl = data.publicUrl;
-      setForm((p) => ({ ...p, urlCardWhatsapp: publicUrl }));
-      const err = await save({ ...buildPayload(), urlCardWhatsapp: publicUrl } as any);
+      const fraseSalva = frase.trim() || null;
+      setForm((p) => ({ ...p, urlCardWhatsapp: publicUrl, fraseChamada: fraseSalva ?? "" }));
+      const err = await save({
+        ...buildPayload(),
+        urlCardWhatsapp: publicUrl,
+        fraseChamada: fraseSalva,
+      } as any);
       if (err) throw err;
       toast.success("Card de compartilhamento gerado!");
     } catch (e: any) {
