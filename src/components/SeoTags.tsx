@@ -9,7 +9,14 @@ type Props = {
   type?: "website" | "article" | "profile";
 };
 
-const DEFAULT_IMAGE = "/og-default.png";
+const SITE_ORIGIN = "https://igarageauto.vercel.app";
+const DEFAULT_IMAGE = `${SITE_ORIGIN}/og-default.png`;
+
+function toAbsolute(u?: string): string | undefined {
+  if (!u) return undefined;
+  if (/^https?:\/\//i.test(u)) return u;
+  return `${SITE_ORIGIN}${u.startsWith("/") ? "" : "/"}${u}`;
+}
 
 /**
  * Tags SEO + Open Graph + Twitter Card.
@@ -20,8 +27,8 @@ const DEFAULT_IMAGE = "/og-default.png";
  * `og-preview` no link compartilhado.
  */
 export function SeoTags({ title, description, image, imageType, url, type = "website" }: Props) {
-  const finalImage = image && /^https?:\/\//i.test(image) ? image : DEFAULT_IMAGE;
-  const finalUrl = url ?? (typeof window !== "undefined" ? window.location.href : "");
+  const finalImage = toAbsolute(image) ?? DEFAULT_IMAGE;
+  const finalUrl = toAbsolute(url) ?? (typeof window !== "undefined" ? window.location.href : SITE_ORIGIN);
 
   return (
     <Helmet>
