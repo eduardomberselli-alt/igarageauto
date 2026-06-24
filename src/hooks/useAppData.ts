@@ -42,6 +42,7 @@ export function useProfile(userId?: string) {
         brandPrimaryColor: (data as any).brand_primary_color ?? "#722F37",
         brandAccentColor: (data as any).brand_accent_color ?? "#D4AF37",
         status: ((data as any).status ?? "active") as "active" | "suspended",
+        urlMarcaDagua: (data as any).url_marca_dagua ?? null,
       });
     }
     setLoading(false);
@@ -71,6 +72,7 @@ export function useProfile(userId?: string) {
       ...(next.websiteUrl !== undefined ? { website_url: next.websiteUrl } : {}),
       ...(next.brandPrimaryColor !== undefined ? { brand_primary_color: next.brandPrimaryColor } : {}),
       ...(next.brandAccentColor !== undefined ? { brand_accent_color: next.brandAccentColor } : {}),
+      ...(next.urlMarcaDagua !== undefined ? { url_marca_dagua: next.urlMarcaDagua } : {}),
     };
     // Upsert garante que o registro é criado caso o trigger handle_new_user não tenha rodado
     const { data, error } = await supabase
