@@ -36,7 +36,6 @@ import { useUserMode } from "@/hooks/useUserMode";
 import { supabase } from "@/integrations/supabase/client";
 import { SeoTags } from "@/components/SeoTags";
 import { formatBRL, onlyDigits } from "@/lib/format";
-import { ytEmbed } from "@/lib/youtube";
 import { toast } from "@/hooks/use-toast";
 
 export default function ImovelPublic() {
@@ -49,7 +48,6 @@ export default function ImovelPublic() {
   const byId = usePublicProperty(!isSlugRoute ? params.id : undefined);
   const { property, ownerProfile, loading } = isSlugRoute ? bySlug : byId;
   const [activePhoto, setActivePhoto] = useState(0);
-  const [activeVideo, setActiveVideo] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const clientStoreCtx = useOptionalClientStore();
   const { isAdminMode, isClientMode } = useUserMode(property?.ownerId);
@@ -57,7 +55,6 @@ export default function ImovelPublic() {
 
   useEffect(() => {
     setActivePhoto(0);
-    setActiveVideo(0);
   }, [property?.id]);
 
   // Sincroniza loja no contexto do cliente (quando renderizado dentro do ClientLayout)
@@ -179,8 +176,6 @@ export default function ImovelPublic() {
   if (property.bairro) specs.push({ label: "Cidade", value: property.bairro });
   if (property.endereco) specs.push({ label: "Local", value: property.endereco });
   if (property.quartos > 0) specs.push({ label: "Itens", value: String(property.quartos) });
-
-  const current = property.videos[activeVideo];
 
   return (
     <div className="app-shell pb-32 bg-background">
@@ -437,42 +432,6 @@ export default function ImovelPublic() {
           </div>
         </div>
       </section>
-
-      {/* Vídeos */}
-      {property.videos.length > 0 && current && (
-        <section className="mt-6 px-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider mb-2">Vídeos</h2>
-          <div className="overflow-hidden rounded-2xl border border-border bg-card">
-            <div className="aspect-video bg-muted">
-              <iframe
-                key={current.id}
-                src={ytEmbed(current.youtubeId)}
-                title={current.titulo}
-                className="h-full w-full"
-                allow="accelerometer; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-            </div>
-          </div>
-          {property.videos.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto pb-1 mt-2 -mx-4 px-4">
-              {property.videos.map((v, i) => (
-                <button
-                  key={v.id}
-                  onClick={() => setActiveVideo(i)}
-                  className={`shrink-0 rounded-full px-3 py-1.5 text-xs font-medium border transition-colors ${
-                    i === activeVideo
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-card text-foreground border-border"
-                  }`}
-                >
-                  {v.titulo}
-                </button>
-              ))}
-            </div>
-          )}
-        </section>
-      )}
 
       {/* Localização */}
       {(property.latitude || property.endereco) && (
