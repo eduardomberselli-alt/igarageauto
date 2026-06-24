@@ -102,21 +102,18 @@ function clamp(n: number, min: number, max: number) {
  * Fallback via fetch → blob → ObjectURL caso o servidor não responda CORS no <img>.
  */
 function loadWatermarkImage(url: string): Promise<HTMLImageElement> {
-  const bust = url + (url.includes("?") ? "&" : "?") + "wm=1";
+  // 1) Tentativa direta: <img crossOrigin="anonymous">
   const direct = new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.decoding = "async";
-    img.onload = async () => {
-      try { await img.decode?.(); } catch { /* ignore */ }
-      resolve(img);
-    };
+    img.crossOrigin = "anonymous"; // OBRIGATÓRIO para liberar o Canvas (sem tainted)
+    img.onload = () => resolve(img);
     img.onerror = (err) => reject(err);
-    img.src = bust;
+    img.src = url;
   });
 
+  // 2) Fallback: fetch → blob → ObjectURL (caso o servidor não responda CORS no <img>)
   return direct.catch(async () => {
-    const res = await fetch(bust, { mode: "cors", credentials: "omit" });
+    const res = await fetch(url, { mode: "cors", credentials: "omit", cache: "reload" });
     if (!res.ok) throw new Error(`watermark fetch ${res.status}`);
     const blob = await res.blob();
     const objUrl = URL.createObjectURL(blob);
@@ -128,7 +125,6 @@ function loadWatermarkImage(url: string): Promise<HTMLImageElement> {
         img.src = objUrl;
       });
     } finally {
-      // Libera após decode (próximo tick)
       setTimeout(() => URL.revokeObjectURL(objUrl), 5000);
     }
   });
