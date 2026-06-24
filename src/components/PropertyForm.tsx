@@ -13,6 +13,15 @@ import { MAX_PROPERTY_PHOTOS, type Property } from "@/types";
 import { cn } from "@/lib/utils";
 import { compressImage } from "@/lib/imageCompression";
 
+const preloadWatermark = (url: string): Promise<HTMLImageElement | null> =>
+  new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+
 export type PropertyFormValues = {
   titulo: string;
   preco: number;
@@ -202,6 +211,7 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
     setUploading(true);
     const folder = initial?.id ?? user.id;
     const uploaded: string[] = [];
+    const wmImage = watermarkUrl ? await preloadWatermark(watermarkUrl) : null;
     for (const original of list) {
       if (!original.type.startsWith("image/")) {
         toast.error(`"${original.name}" não é uma imagem`);
@@ -212,8 +222,8 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
         file = await compressImage(original, {
           maxBytes: MAX_PHOTO_SIZE_MB * 1024 * 1024,
           maxDimension: 1920,
-          watermarkUrl: watermarkUrl ?? null,
-          watermarkText: watermarkUrl ? null : "✨ Garage",
+          watermarkImage: wmImage,
+          watermarkText: wmImage ? null : "✨ Garage",
         });
       } catch {
         // mantém o original
