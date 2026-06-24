@@ -50,8 +50,8 @@ export async function compressImage(
     const wmImg = opts.watermarkImage
       ?? (opts.watermarkUrl ? await loadImageCORS(opts.watermarkUrl).catch(() => null) : null);
     if (wmImg) {
-      // largura máx ~15% da foto, preservando proporção da imagem (já transparente)
-      const wmTargetW = Math.min(wmImg.naturalWidth, Math.round(targetW * 0.15));
+      // largura da marca d'água ocupando ~58% da foto, preservando proporção da imagem (já transparente)
+      const wmTargetW = Math.min(wmImg.naturalWidth, Math.round(targetW * 0.58));
       const scale2 = wmTargetW / wmImg.naturalWidth;
       const wmW = Math.round(wmImg.naturalWidth * scale2);
       const wmH = Math.round(wmImg.naturalHeight * scale2);
