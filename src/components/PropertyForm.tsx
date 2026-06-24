@@ -583,13 +583,6 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
         </div>
       </SheetContent>
     </Sheet>
-    <WatermarkPreviewDialog
-      open={previewOpen}
-      files={pendingFiles}
-      uploading={uploading}
-      onConfirm={confirmPreviewUpload}
-      onCancel={cancelPreview}
-    />
     </>
   );
 }
