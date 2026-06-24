@@ -433,7 +433,7 @@ export default function Perfil() {
                       variant="outline"
                       className="flex-1"
                       onClick={handleGenerateWatermark}
-                      disabled={generatingWm || !form.fotoUrl}
+                      disabled={generatingWm || !form.logoLojaUrl}
                     >
                       {generatingWm ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
                       Regenerar
@@ -458,7 +458,7 @@ export default function Perfil() {
                   size="sm"
                   className="w-full"
                   onClick={handleGenerateWatermark}
-                  disabled={generatingWm || !form.fotoUrl}
+                  disabled={generatingWm || !form.logoLojaUrl}
                 >
                   {generatingWm ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
