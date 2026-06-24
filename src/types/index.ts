@@ -66,6 +66,7 @@ export type Profile = {
   status?: "active" | "suspended";
   urlMarcaDagua?: string | null;
   logoLojaUrl?: string | null;
+  urlCardWhatsapp?: string | null;
 };
 
 export const DEFAULT_BRAND_PRIMARY = "#722F37";

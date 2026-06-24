@@ -102,7 +102,7 @@ export default function PublicPortfolio() {
       <SeoTags
         title={`${profile.nome} — Garage`}
         description={`Portfólio profissional de veículos com curadoria técnica.`}
-        image={profile.fotoUrl}
+        image={profile.urlCardWhatsapp || profile.fotoUrl}
         type="profile"
       />
       {/* Header de perfil — sempre visível */}

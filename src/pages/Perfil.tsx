@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { X, Plus, LogOut, Copy, ExternalLink, Download, Upload, Loader2, Share2, Store, Sparkles, Trash2 } from "lucide-react";
+import { X, Plus, LogOut, Copy, ExternalLink, Download, Upload, Loader2, Share2, Store, Sparkles, Trash2, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import { QRCodeCanvas } from "qrcode.react";
 import { Button } from "@/components/ui/button";
@@ -69,14 +69,21 @@ export default function Perfil() {
     websiteUrl: "",
     urlMarcaDagua: "",
     logoLojaUrl: "",
+    urlCardWhatsapp: "",
   });
   const [novaInfo, setNovaInfo] = useState("");
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [generatingWm, setGeneratingWm] = useState(false);
+  const [generatingCard, setGeneratingCard] = useState(false);
+  const [cardTitulo, setCardTitulo] = useState("");
+  const [cardFrase, setCardFrase] = useState("");
+  const [cardBgUrl, setCardBgUrl] = useState<string>("");
+  const [uploadingCardBg, setUploadingCardBg] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logoInputRef = useRef<HTMLInputElement>(null);
+  const cardBgInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (profile) {
@@ -98,7 +105,9 @@ export default function Perfil() {
         websiteUrl: profile.websiteUrl ?? "",
         urlMarcaDagua: profile.urlMarcaDagua ?? "",
         logoLojaUrl: (profile as any).logoLojaUrl ?? "",
+        urlCardWhatsapp: (profile as any).urlCardWhatsapp ?? "",
       });
+      if (!cardTitulo) setCardTitulo(profile.nome ?? "");
     }
   }, [profile]);
 
@@ -131,6 +140,7 @@ export default function Perfil() {
     websiteUrl: form.websiteUrl.trim() || null,
     urlMarcaDagua: form.urlMarcaDagua.trim() || null,
     logoLojaUrl: form.logoLojaUrl.trim() || null,
+    urlCardWhatsapp: form.urlCardWhatsapp.trim() || null,
   });
 
   const handleSave = async () => {
@@ -178,6 +188,144 @@ export default function Perfil() {
     const err = await save({ ...buildPayload(), urlMarcaDagua: null } as any);
     if (err) toast.error(err.message);
     else toast.success("Marca d'água removida");
+  };
+
+  const handleCardBgUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const original = e.target.files?.[0];
+    if (!original || !user) return;
+    if (!original.type.startsWith("image/")) {
+      toast.error("Selecione um arquivo de imagem");
+      return;
+    }
+    setUploadingCardBg(true);
+    try {
+      let file = original;
+      try {
+        file = await compressImage(original, { maxBytes: 3 * 1024 * 1024, maxDimension: 1600 });
+      } catch { /* mantém original */ }
+      const ext = (file.type.split("/")[1] || "jpg").replace("jpeg", "jpg");
+      const path = `${user.id}/card-bg-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, file, { cacheControl: "3600", upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+      setCardBgUrl(data.publicUrl);
+      toast.success("Fundo do card enviado");
+    } catch (err: any) {
+      toast.error(err?.message || "Erro ao enviar fundo");
+    } finally {
+      setUploadingCardBg(false);
+      if (cardBgInputRef.current) cardBgInputRef.current.value = "";
+    }
+  };
+
+  const loadImageCors = (url: string): Promise<HTMLImageElement> =>
+    new Promise((resolve, reject) => {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => resolve(img);
+      img.onerror = (e) => reject(e);
+      const sep = url.includes("?") ? "&" : "?";
+      img.src = `${url}${sep}cb=${Date.now()}`;
+    });
+
+  const handleGenerateCardWhatsapp = async () => {
+    if (!user) return;
+    setGeneratingCard(true);
+    try {
+      const W = 1200;
+      const H = 630;
+      const canvas = document.createElement("canvas");
+      canvas.width = W;
+      canvas.height = H;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Canvas indisponível");
+
+      // Fundo
+      if (cardBgUrl) {
+        try {
+          const bg = await loadImageCors(cardBgUrl);
+          // cover
+          const ratio = Math.max(W / bg.width, H / bg.height);
+          const bw = bg.width * ratio;
+          const bh = bg.height * ratio;
+          const bx = (W - bw) / 2;
+          const by = (H - bh) / 2;
+          (ctx as any).filter = "blur(6px)";
+          ctx.drawImage(bg, bx, by, bw, bh);
+          (ctx as any).filter = "none";
+        } catch {
+          // fallback para gradiente
+          const g = ctx.createLinearGradient(0, 0, W, H);
+          g.addColorStop(0, "#1a1a1a");
+          g.addColorStop(1, "#3a1f25");
+          ctx.fillStyle = g;
+          ctx.fillRect(0, 0, W, H);
+        }
+      } else {
+        const g = ctx.createLinearGradient(0, 0, W, H);
+        g.addColorStop(0, "#1a1a1a");
+        g.addColorStop(1, "#3a1f25");
+        ctx.fillStyle = g;
+        ctx.fillRect(0, 0, W, H);
+      }
+
+      // Filtro escuro
+      ctx.fillStyle = "rgba(0,0,0,0.6)";
+      ctx.fillRect(0, 0, W, H);
+
+      // Logo centralizada
+      if (form.logoLojaUrl) {
+        try {
+          const logo = await loadImageCors(form.logoLojaUrl);
+          const maxW = W * 0.45;
+          const maxH = H * 0.45;
+          const s = Math.min(maxW / logo.width, maxH / logo.height);
+          const lw = logo.width * s;
+          const lh = logo.height * s;
+          ctx.drawImage(logo, (W - lw) / 2, (H - lh) / 2 - 40, lw, lh);
+        } catch { /* ignora */ }
+      }
+
+      // Título
+      const titulo = (cardTitulo || form.nome || "").trim();
+      const frase = (cardFrase || "Confira nosso estoque completo!").trim();
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = "bold 56px sans-serif";
+      ctx.fillText(titulo, W / 2, H - 110);
+      ctx.fillStyle = "rgba(230,230,230,0.92)";
+      ctx.font = "400 32px sans-serif";
+      ctx.fillText(frase, W / 2, H - 60);
+
+      const blob: Blob | null = await new Promise((r) => canvas.toBlob((b) => r(b), "image/jpeg", 0.9));
+      if (!blob) throw new Error("Falha ao gerar imagem");
+
+      const path = `${user.id}/card-whatsapp-${Date.now()}.jpg`;
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, blob, { cacheControl: "3600", upsert: true, contentType: "image/jpeg" });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+      const publicUrl = data.publicUrl;
+      setForm((p) => ({ ...p, urlCardWhatsapp: publicUrl }));
+      const err = await save({ ...buildPayload(), urlCardWhatsapp: publicUrl } as any);
+      if (err) throw err;
+      toast.success("Card de compartilhamento gerado!");
+    } catch (e: any) {
+      console.error(e);
+      toast.error(e?.message || "Falha ao gerar card");
+    } finally {
+      setGeneratingCard(false);
+    }
+  };
+
+  const handleRemoveCardWhatsapp = async () => {
+    setForm((p) => ({ ...p, urlCardWhatsapp: "" }));
+    const err = await save({ ...buildPayload(), urlCardWhatsapp: null } as any);
+    if (err) toast.error(err.message);
+    else toast.success("Card removido");
   };
 
   const hasSlug = !!form.slug.trim();
@@ -473,6 +621,112 @@ export default function Perfil() {
               </p>
             </div>
           </div>
+
+          {/* Card de Compartilhamento (WhatsApp) */}
+          <section className="mb-6 rounded-2xl border border-border bg-card p-4">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+              Card de Compartilhamento (WhatsApp)
+            </h2>
+
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Imagem de fundo (opcional)</Label>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => cardBgInputRef.current?.click()}
+                    disabled={uploadingCardBg}
+                  >
+                    {uploadingCardBg ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+                    {cardBgUrl ? "Trocar fundo" : "Enviar fundo"}
+                  </Button>
+                  {cardBgUrl && (
+                    <Button type="button" size="sm" variant="ghost" onClick={() => setCardBgUrl("")}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                <input
+                  ref={cardBgInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleCardBgUpload}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs">Título do Card</Label>
+                <Input
+                  value={cardTitulo}
+                  onChange={(e) => setCardTitulo(e.target.value)}
+                  placeholder={form.nome || "Nome da sua loja"}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs">Frase de Chamada</Label>
+                <Input
+                  value={cardFrase}
+                  onChange={(e) => setCardFrase(e.target.value)}
+                  placeholder="Confira nosso estoque completo!"
+                />
+              </div>
+
+              <Button
+                type="button"
+                size="sm"
+                className="w-full"
+                onClick={handleGenerateCardWhatsapp}
+                disabled={generatingCard}
+              >
+                {generatingCard ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                ✨ Gerar Card do WhatsApp
+              </Button>
+
+              <div
+                className="w-full rounded-lg border border-border overflow-hidden flex items-center justify-center"
+                style={{
+                  aspectRatio: "1200 / 630",
+                  backgroundImage:
+                    "linear-gradient(45deg,#e5e7eb 25%,transparent 25%),linear-gradient(-45deg,#e5e7eb 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e5e7eb 75%),linear-gradient(-45deg,transparent 75%,#e5e7eb 75%)",
+                  backgroundSize: "16px 16px",
+                  backgroundPosition: "0 0,0 8px,8px -8px,-8px 0",
+                }}
+              >
+                {form.urlCardWhatsapp ? (
+                  <img
+                    src={form.urlCardWhatsapp}
+                    alt="Preview do card do WhatsApp"
+                    className="h-full w-full object-contain"
+                  />
+                ) : (
+                  <span className="text-[11px] text-muted-foreground px-3 text-center">
+                    Nenhum card gerado ainda. Clique em "Gerar Card do WhatsApp" para visualizar.
+                  </span>
+                )}
+              </div>
+
+              {form.urlCardWhatsapp && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="w-full"
+                  onClick={handleRemoveCardWhatsapp}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Remover card
+                </Button>
+              )}
+
+              <p className="text-[10px] text-muted-foreground text-center leading-tight">
+                Este card aparece como preview quando você compartilha o link da sua loja no WhatsApp.
+              </p>
+            </div>
+          </section>
 
           {/* Link da loja */}
           {!hasSlug && (

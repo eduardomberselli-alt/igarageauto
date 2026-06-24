@@ -350,6 +350,7 @@ export type Database = {
           status: string
           tiktok_url: string | null
           updated_at: string
+          url_card_whatsapp: string | null
           url_marca_dagua: string | null
           user_id: string
           website_url: string | null
@@ -374,6 +375,7 @@ export type Database = {
           status?: string
           tiktok_url?: string | null
           updated_at?: string
+          url_card_whatsapp?: string | null
           url_marca_dagua?: string | null
           user_id: string
           website_url?: string | null
@@ -398,6 +400,7 @@ export type Database = {
           status?: string
           tiktok_url?: string | null
           updated_at?: string
+          url_card_whatsapp?: string | null
           url_marca_dagua?: string | null
           user_id?: string
           website_url?: string | null
