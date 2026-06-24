@@ -45,37 +45,39 @@ export async function compressImage(
   ctx.drawImage(bitmap, 0, 0, targetW, targetH);
   bitmap.close?.();
 
-  // ----- Marca d'água -----
+  // ----- Marca d'água (58% largura, centro) -----
   try {
-    const wmImg = opts.watermarkImage
+    const watermarkImg = opts.watermarkImage
       ?? (opts.watermarkUrl ? await loadImageCORS(opts.watermarkUrl).catch(() => null) : null);
-    if (wmImg) {
-      // largura da marca d'água ocupando ~58% da foto, preservando proporção da imagem (já transparente)
-      const wmTargetW = Math.min(wmImg.naturalWidth, Math.round(targetW * 0.58));
-      const scale2 = wmTargetW / wmImg.naturalWidth;
-      const wmW = Math.round(wmImg.naturalWidth * scale2);
-      const wmH = Math.round(wmImg.naturalHeight * scale2);
-      const x = Math.round((targetW - wmW) / 2);
-      const y = Math.round((targetH - wmH) / 2);
+    if (watermarkImg) {
+      // Força opacidade total pois os 30% já foram aplicados na imagem do perfil
       ctx.globalAlpha = 1.0;
-      ctx.drawImage(wmImg, x, y, wmW, wmH);
-      ctx.globalAlpha = 1.0;
+
+      // CÁLCULO DA LARGURA EM 58% (Forçando ficar grande de verdade)
+      const larguraDesejada = targetW * 0.58;
+
+      // Calcula a altura proporcional para NUNCA distorcer ou amassar
+      const alturaProporcional = (watermarkImg.height * larguraDesejada) / watermarkImg.width;
+
+      // Centralização absoluta na foto do carro
+      const posicaoX = (targetW / 2) - (larguraDesejada / 2);
+      const posicaoY = (targetH / 2) - (alturaProporcional / 2);
+
+      // Desenha a logo grande por cima da foto do veículo
+      ctx.drawImage(watermarkImg, posicaoX, posicaoY, larguraDesejada, alturaProporcional);
+
+      console.log("LOG: Marca d'água aplicada com largura de:", larguraDesejada, "px no centro.");
     } else if (opts.watermarkText) {
-      const fontSize = Math.max(28, Math.round(targetW * 0.05));
-      ctx.save();
+      // Fallback se não tiver imagem
       ctx.globalAlpha = 0.30;
-      ctx.fillStyle = "#ffffff";
-      ctx.strokeStyle = "rgba(0,0,0,0.4)";
-      ctx.lineWidth = Math.max(2, Math.round(fontSize / 16));
-      ctx.font = `700 ${fontSize}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+      ctx.fillStyle = "#D4AF37";
+      ctx.font = "bold 56px sans-serif"; // Fonte grande para o fallback
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      const cx = targetW / 2;
-      const cy = targetH / 2;
-      ctx.strokeText(opts.watermarkText, cx, cy);
-      ctx.fillText(opts.watermarkText, cx, cy);
-      ctx.restore();
+      ctx.fillText("✨ Garage", targetW / 2, targetH / 2);
     }
+
+    ctx.globalAlpha = 1.0; // Reseta a opacidade do Canvas para o padrão
   } catch {
     // sem marca d'água é OK
   }
