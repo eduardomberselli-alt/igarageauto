@@ -67,6 +67,7 @@ export type Profile = {
   urlMarcaDagua?: string | null;
   logoLojaUrl?: string | null;
   urlCardWhatsapp?: string | null;
+  fraseChamada?: string | null;
 };
 
 export const DEFAULT_BRAND_PRIMARY = "#722F37";

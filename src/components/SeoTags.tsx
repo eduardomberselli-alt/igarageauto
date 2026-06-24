@@ -4,11 +4,12 @@ type Props = {
   title: string;
   description: string;
   image?: string;
+  imageType?: string;
   url?: string;
   type?: "website" | "article" | "profile";
 };
 
-const DEFAULT_IMAGE = "https://garage.app/og-garage.jpg";
+const DEFAULT_IMAGE = "/og-default.png";
 
 /**
  * Tags SEO + Open Graph + Twitter Card.
@@ -18,7 +19,7 @@ const DEFAULT_IMAGE = "https://garage.app/og-garage.jpg";
  * modernos). Para garantir preview correto em todos os canais, use a Edge Function
  * `og-preview` no link compartilhado.
  */
-export function SeoTags({ title, description, image, url, type = "website" }: Props) {
+export function SeoTags({ title, description, image, imageType, url, type = "website" }: Props) {
   const finalImage = image && /^https?:\/\//i.test(image) ? image : DEFAULT_IMAGE;
   const finalUrl = url ?? (typeof window !== "undefined" ? window.location.href : "");
 
@@ -32,6 +33,7 @@ export function SeoTags({ title, description, image, url, type = "website" }: Pr
       <meta property="og:description" content={description} />
       <meta property="og:image" content={finalImage} />
       <meta property="og:image:secure_url" content={finalImage} />
+      {imageType && <meta property="og:image:type" content={imageType} />}
       <meta property="og:image:width" content="1200" />
       <meta property="og:image:height" content="630" />
       {finalUrl && <meta property="og:url" content={finalUrl} />}

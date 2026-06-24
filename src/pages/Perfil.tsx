@@ -70,6 +70,7 @@ export default function Perfil() {
     urlMarcaDagua: "",
     logoLojaUrl: "",
     urlCardWhatsapp: "",
+    fraseChamada: "",
   });
   const [novaInfo, setNovaInfo] = useState("");
   const [busy, setBusy] = useState(false);
@@ -106,8 +107,10 @@ export default function Perfil() {
         urlMarcaDagua: profile.urlMarcaDagua ?? "",
         logoLojaUrl: (profile as any).logoLojaUrl ?? "",
         urlCardWhatsapp: (profile as any).urlCardWhatsapp ?? "",
+        fraseChamada: (profile as any).fraseChamada ?? "",
       });
       if (!cardTitulo) setCardTitulo(profile.nome ?? "");
+      if (!cardFrase && ((profile as any).fraseChamada ?? "")) setCardFrase((profile as any).fraseChamada ?? "");
     }
   }, [profile]);
 
@@ -141,6 +144,7 @@ export default function Perfil() {
     urlMarcaDagua: form.urlMarcaDagua.trim() || null,
     logoLojaUrl: form.logoLojaUrl.trim() || null,
     urlCardWhatsapp: form.urlCardWhatsapp.trim() || null,
+    fraseChamada: form.fraseChamada.trim() || null,
   });
 
   const handleSave = async () => {
@@ -309,8 +313,13 @@ export default function Perfil() {
       if (upErr) throw upErr;
       const { data } = supabase.storage.from("avatars").getPublicUrl(path);
       const publicUrl = data.publicUrl;
-      setForm((p) => ({ ...p, urlCardWhatsapp: publicUrl }));
-      const err = await save({ ...buildPayload(), urlCardWhatsapp: publicUrl } as any);
+      const fraseSalva = frase.trim() || null;
+      setForm((p) => ({ ...p, urlCardWhatsapp: publicUrl, fraseChamada: fraseSalva ?? "" }));
+      const err = await save({
+        ...buildPayload(),
+        urlCardWhatsapp: publicUrl,
+        fraseChamada: fraseSalva,
+      } as any);
       if (err) throw err;
       toast.success("Card de compartilhamento gerado!");
     } catch (e: any) {

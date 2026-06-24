@@ -15,12 +15,11 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
 
 // URL pública da app (onde o usuário humano vai parar)
-const APP_BASE_URL = "https://garage.app";
+const APP_BASE_URL = "https://igarageauto.vercel.app";
 
-// Imagem Open Graph oficial e única da Garage (1200x630).
-// Usada em TODOS os compartilhamentos (loja, veículo, institucional).
-const BRAND_OG_IMAGE = `${APP_BASE_URL}/og-garage.jpg`;
-const DEFAULT_OG_IMAGE = BRAND_OG_IMAGE;
+// Imagem Open Graph padrão do projeto (1200x630).
+const DEFAULT_OG_IMAGE = `${APP_BASE_URL}/og-default.png`;
+const BRAND_OG_IMAGE = DEFAULT_OG_IMAGE;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

@@ -45,6 +45,7 @@ export function useProfile(userId?: string) {
         urlMarcaDagua: (data as any).url_marca_dagua ?? null,
         logoLojaUrl: (data as any).logo_loja_url ?? null,
         urlCardWhatsapp: (data as any).url_card_whatsapp ?? null,
+        fraseChamada: (data as any).frase_chamada ?? null,
       });
     }
     setLoading(false);
@@ -77,6 +78,7 @@ export function useProfile(userId?: string) {
       ...(next.urlMarcaDagua !== undefined ? { url_marca_dagua: next.urlMarcaDagua } : {}),
       ...(next.logoLojaUrl !== undefined ? { logo_loja_url: next.logoLojaUrl } : {}),
       ...(next.urlCardWhatsapp !== undefined ? { url_card_whatsapp: next.urlCardWhatsapp } : {}),
+      ...(next.fraseChamada !== undefined ? { frase_chamada: next.fraseChamada } : {}),
     };
     // Upsert garante que o registro é criado caso o trigger handle_new_user não tenha rodado
     const { data, error } = await supabase
