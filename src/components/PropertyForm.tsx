@@ -559,7 +559,7 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
               />
             </div>
             <p className="text-[11px] text-muted-foreground">
-              Limite para upload direto: {MAX_VIDEO_SIZE_MB}MB (.mp4, .mov, .webm). Para vídeos maiores, utilize links do YouTube.
+              Formatos aceitos: MP4, MOV, WEBM. Limite máximo: {MAX_VIDEO_SIZE_MB}MB.
             </p>
           </div>
 
