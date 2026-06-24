@@ -68,12 +68,15 @@ export default function Perfil() {
     linkedinUrl: "",
     websiteUrl: "",
     urlMarcaDagua: "",
+    logoLojaUrl: "",
   });
   const [novaInfo, setNovaInfo] = useState("");
   const [busy, setBusy] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
   const [generatingWm, setGeneratingWm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (profile) {
@@ -94,6 +97,7 @@ export default function Perfil() {
         linkedinUrl: profile.linkedinUrl ?? "",
         websiteUrl: profile.websiteUrl ?? "",
         urlMarcaDagua: profile.urlMarcaDagua ?? "",
+        logoLojaUrl: (profile as any).logoLojaUrl ?? "",
       });
     }
   }, [profile]);
@@ -126,6 +130,7 @@ export default function Perfil() {
     linkedinUrl: form.linkedinUrl.trim() || null,
     websiteUrl: form.websiteUrl.trim() || null,
     urlMarcaDagua: form.urlMarcaDagua.trim() || null,
+    logoLojaUrl: form.logoLojaUrl.trim() || null,
   });
 
   const handleSave = async () => {
@@ -141,13 +146,14 @@ export default function Perfil() {
   };
 
   const handleGenerateWatermark = async () => {
-    if (!form.fotoUrl || !user) {
-      toast.error("Envie a logo da loja primeiro");
+    if (!user) return;
+    if (!form.logoLojaUrl) {
+      toast.error("Por favor, faça o upload do Logotipo da Loja primeiro.");
       return;
     }
     setGeneratingWm(true);
     try {
-      const blob = await generateWatermarkPng(form.fotoUrl, { maxWidth: 200, opacity: 0.18 });
+      const blob = await generateWatermarkPng(form.logoLojaUrl, { maxWidth: 200, opacity: 0.18 });
       const path = `${user.id}/watermarks/watermark-${Date.now()}.png`;
       const { error: upErr } = await supabase.storage
         .from("avatars")
