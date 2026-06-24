@@ -1,9 +1,14 @@
+import { useLocation } from "react-router-dom";
 import { useOptionalClientStore } from "@/contexts/ClientStoreContext";
 import { onlyDigits } from "@/lib/format";
 
 export function FloatingWhatsAppButton() {
+  const location = useLocation();
   const ctx = useOptionalClientStore();
   const whatsapp = ctx?.store?.whatsapp;
+
+  // Não exibe na Academy para não poluir o layout de vídeos/aulas
+  if (location.pathname.startsWith("/academy")) return null;
   if (!whatsapp) return null;
 
   const digits = onlyDigits(whatsapp);
