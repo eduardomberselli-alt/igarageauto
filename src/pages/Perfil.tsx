@@ -144,6 +144,7 @@ export default function Perfil() {
     urlMarcaDagua: form.urlMarcaDagua.trim() || null,
     logoLojaUrl: form.logoLojaUrl.trim() || null,
     urlCardWhatsapp: form.urlCardWhatsapp.trim() || null,
+    fraseChamada: form.fraseChamada.trim() || null,
   });
 
   const handleSave = async () => {
