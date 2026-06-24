@@ -107,8 +107,10 @@ export default function Perfil() {
         urlMarcaDagua: profile.urlMarcaDagua ?? "",
         logoLojaUrl: (profile as any).logoLojaUrl ?? "",
         urlCardWhatsapp: (profile as any).urlCardWhatsapp ?? "",
+        fraseChamada: (profile as any).fraseChamada ?? "",
       });
       if (!cardTitulo) setCardTitulo(profile.nome ?? "");
+      if (!cardFrase && ((profile as any).fraseChamada ?? "")) setCardFrase((profile as any).fraseChamada ?? "");
     }
   }, [profile]);
 
