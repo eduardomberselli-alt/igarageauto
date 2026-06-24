@@ -622,6 +622,112 @@ export default function Perfil() {
             </div>
           </div>
 
+          {/* Card de Compartilhamento (WhatsApp) */}
+          <section className="mb-6 rounded-2xl border border-border bg-card p-4">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+              Card de Compartilhamento (WhatsApp)
+            </h2>
+
+            <div className="space-y-3">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Imagem de fundo (opcional)</Label>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    onClick={() => cardBgInputRef.current?.click()}
+                    disabled={uploadingCardBg}
+                  >
+                    {uploadingCardBg ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImageIcon className="h-4 w-4" />}
+                    {cardBgUrl ? "Trocar fundo" : "Enviar fundo"}
+                  </Button>
+                  {cardBgUrl && (
+                    <Button type="button" size="sm" variant="ghost" onClick={() => setCardBgUrl("")}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                <input
+                  ref={cardBgInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleCardBgUpload}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs">Título do Card</Label>
+                <Input
+                  value={cardTitulo}
+                  onChange={(e) => setCardTitulo(e.target.value)}
+                  placeholder={form.nome || "Nome da sua loja"}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs">Frase de Chamada</Label>
+                <Input
+                  value={cardFrase}
+                  onChange={(e) => setCardFrase(e.target.value)}
+                  placeholder="Confira nosso estoque completo!"
+                />
+              </div>
+
+              <Button
+                type="button"
+                size="sm"
+                className="w-full"
+                onClick={handleGenerateCardWhatsapp}
+                disabled={generatingCard}
+              >
+                {generatingCard ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                ✨ Gerar Card do WhatsApp
+              </Button>
+
+              <div
+                className="w-full rounded-lg border border-border overflow-hidden flex items-center justify-center"
+                style={{
+                  aspectRatio: "1200 / 630",
+                  backgroundImage:
+                    "linear-gradient(45deg,#e5e7eb 25%,transparent 25%),linear-gradient(-45deg,#e5e7eb 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e5e7eb 75%),linear-gradient(-45deg,transparent 75%,#e5e7eb 75%)",
+                  backgroundSize: "16px 16px",
+                  backgroundPosition: "0 0,0 8px,8px -8px,-8px 0",
+                }}
+              >
+                {form.urlCardWhatsapp ? (
+                  <img
+                    src={form.urlCardWhatsapp}
+                    alt="Preview do card do WhatsApp"
+                    className="h-full w-full object-contain"
+                  />
+                ) : (
+                  <span className="text-[11px] text-muted-foreground px-3 text-center">
+                    Nenhum card gerado ainda. Clique em "Gerar Card do WhatsApp" para visualizar.
+                  </span>
+                )}
+              </div>
+
+              {form.urlCardWhatsapp && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="ghost"
+                  className="w-full"
+                  onClick={handleRemoveCardWhatsapp}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Remover card
+                </Button>
+              )}
+
+              <p className="text-[10px] text-muted-foreground text-center leading-tight">
+                Este card aparece como preview quando você compartilha o link da sua loja no WhatsApp.
+              </p>
+            </div>
+          </section>
+
           {/* Link da loja */}
           {!hasSlug && (
             <section className="mb-6 rounded-2xl border border-border bg-card p-4">
