@@ -64,6 +64,7 @@ export type Profile = {
   brandPrimaryColor?: string;
   brandAccentColor?: string;
   status?: "active" | "suspended";
+  urlMarcaDagua?: string | null;
 };
 
 export const DEFAULT_BRAND_PRIMARY = "#722F37";
