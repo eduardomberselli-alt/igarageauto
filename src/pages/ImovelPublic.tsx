@@ -127,7 +127,6 @@ export default function ImovelPublic() {
   const storeName = ownerProfile?.nome?.trim() || "Loja parceira";
   const storeCity = property.bairro || property.endereco || "";
   const slug = ownerProfile?.slug;
-  const waMsg = encodeURIComponent(`Tenho interesse no ${property.titulo}`);
 
   // URL amigável (canonical) para compartilhar
   const friendlyUrl = vehicleUrl(property, ownerProfile?.slug);
