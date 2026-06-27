@@ -18,6 +18,7 @@ import {
   Calendar,
   Gauge,
   Eye,
+  ZoomIn,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PropertyMap } from "@/components/PropertyMap";
@@ -319,7 +320,25 @@ export default function ImovelPublic() {
         <div className="absolute bottom-3 left-3 z-10">
           <FavoriteButton vehicleId={property.id} size="md" />
         </div>
+
+        {/* Indicador de zoom — canto inferior direito */}
+        {cover && (
+          <button
+            type="button"
+            onClick={() => setLightboxOpen(true)}
+            aria-label="Ampliar foto"
+            className="absolute bottom-3 right-3 z-10 h-10 w-10 rounded-full flex items-center justify-center bg-white/15 backdrop-blur-md border border-white/25 text-white shadow-[0_4px_16px_rgba(0,0,0,0.35)] hover:bg-white/25 transition"
+          >
+            <ZoomIn className="h-5 w-5" />
+          </button>
+        )}
       </div>
+
+      {cover && (
+        <p className="text-center text-[11px] text-white/50 mt-2 px-4">
+          Toque na imagem para ampliar
+        </p>
+      )}
 
       <PhotoLightbox
         open={lightboxOpen}
