@@ -21,6 +21,8 @@ type Ctx = {
   setStoreBySlug: (slug: string | null | undefined) => Promise<void>;
   setStoreFromProfile: (p: Profile | null) => void;
   lastStoreSlug: string | null;
+  currentVehicle: { titulo: string; ano: string | null; url: string } | null;
+  setCurrentVehicle: (v: { titulo: string; ano: string | null; url: string } | null) => void;
 };
 
 const ClientStoreContext = createContext<Ctx | undefined>(undefined);
@@ -50,6 +52,7 @@ function mapProfile(prof: any): ClientStore {
 export function ClientStoreProvider({ children }: { children: ReactNode }) {
   const [store, setStore] = useState<ClientStore | null>(null);
   const [loading, setLoading] = useState(false);
+  const [currentVehicle, setCurrentVehicle] = useState<Ctx["currentVehicle"]>(null);
   const lastFetched = useRef<string | null>(null);
 
   const lastStoreSlug =
@@ -86,8 +89,8 @@ export function ClientStoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ store, loading, setStoreBySlug, setStoreFromProfile, lastStoreSlug }),
-    [store, loading, setStoreBySlug, setStoreFromProfile, lastStoreSlug],
+    () => ({ store, loading, setStoreBySlug, setStoreFromProfile, lastStoreSlug, currentVehicle, setCurrentVehicle }),
+    [store, loading, setStoreBySlug, setStoreFromProfile, lastStoreSlug, currentVehicle],
   );
 
   return <ClientStoreContext.Provider value={value}>{children}</ClientStoreContext.Provider>;

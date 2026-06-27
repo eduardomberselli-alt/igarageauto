@@ -25,7 +25,7 @@ export default function ClientLoja() {
 
   const waUrl = profile?.whatsapp
     ? `https://wa.me/${onlyDigits(profile.whatsapp)}?text=${encodeURIComponent(
-        `Olá ${profile.nome}! Gostaria de mais informações sobre os veículos da loja.`,
+        "Olá! Gostaria de falar com um consultor para conhecer os veículos disponíveis no estoque e tirar algumas dúvidas.",
       )}`
     : null;
 
