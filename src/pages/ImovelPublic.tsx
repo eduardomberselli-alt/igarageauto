@@ -35,7 +35,7 @@ import { useOptionalClientStore } from "@/contexts/ClientStoreContext";
 import { useUserMode } from "@/hooks/useUserMode";
 import { supabase } from "@/integrations/supabase/client";
 import { SeoTags } from "@/components/SeoTags";
-import { formatBRL, onlyDigits } from "@/lib/format";
+import { formatBRL } from "@/lib/format";
 import { toast } from "@/hooks/use-toast";
 
 export default function ImovelPublic() {
