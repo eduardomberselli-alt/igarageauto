@@ -3,7 +3,6 @@ import { Link, Navigate, useParams } from "react-router-dom";
 import {
   ArrowLeft,
   MapPin,
-  MessageCircle,
   CheckCircle2,
   BadgeCheck,
   Store,
@@ -25,7 +24,6 @@ import { PropertyMap } from "@/components/PropertyMap";
 import { VehicleStatusBadges } from "@/components/VehicleStatusBadges";
 import { FavoriteButton } from "@/components/FavoriteButton";
 import { ClientSocialLinks } from "@/components/client/ClientSocialLinks";
-import { WhatsAppChatBubble } from "@/components/client/WhatsAppChatBubble";
 import { StoreLogo } from "@/components/client/StoreLogo";
 import { PhotoLightbox } from "@/components/client/PhotoLightbox";
 
@@ -129,9 +127,7 @@ export default function ImovelPublic() {
   const storeName = ownerProfile?.nome?.trim() || "Loja parceira";
   const storeCity = property.bairro || property.endereco || "";
   const slug = ownerProfile?.slug;
-  const waPhone = onlyDigits(ownerProfile?.whatsapp ?? "");
   const waMsg = encodeURIComponent(`Tenho interesse no ${property.titulo}`);
-  const waUrl = waPhone ? `https://wa.me/${waPhone}?text=${waMsg}` : "";
 
   // URL amigável (canonical) para compartilhar
   const friendlyUrl = vehicleUrl(property, ownerProfile?.slug);
