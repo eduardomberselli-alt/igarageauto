@@ -454,10 +454,10 @@ export default function ImovelPublic() {
         </section>
       )}
 
-      {/* 9. DIFERENCIAIS */}
+      {/* 9. CARACTERÍSTICAS */}
       {property.diferenciais.length > 0 && (
         <section className="mt-6 px-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider mb-3">Diferenciais</h2>
+          <h2 className="text-sm font-bold uppercase tracking-wider mb-3">Características</h2>
           <ul className="grid grid-cols-1 gap-2">
             {property.diferenciais.map((d, i) => (
               <li
@@ -465,7 +465,7 @@ export default function ImovelPublic() {
                 className="flex items-center gap-2.5 rounded-xl bg-card border border-border px-3.5 py-2.5 text-sm font-medium"
               >
                 <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                <span>{d}</span>
+                <span>{formatSpecItem(d)}</span>
               </li>
             ))}
           </ul>
