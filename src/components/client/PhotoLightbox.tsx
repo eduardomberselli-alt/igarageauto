@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Maximize2, Minimize2 } from "lucide-react";
 
 type Props = {
   open: boolean;
@@ -13,6 +13,28 @@ type Props = {
 export function PhotoLightbox({ open, photos, index, onClose, onIndexChange, alt }: Props) {
   const touchStartX = useRef<number | null>(null);
   const [dragDx, setDragDx] = useState(0);
+  const imgWrapRef = useRef<HTMLDivElement | null>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => document.removeEventListener("fullscreenchange", onFsChange);
+  }, []);
+
+  const toggleFullscreen = async () => {
+    const el = imgWrapRef.current;
+    if (!el) return;
+    try {
+      if (!document.fullscreenElement) {
+        await el.requestFullscreen?.();
+      } else {
+        await document.exitFullscreen?.();
+      }
+    } catch {
+      /* ignore */
+    }
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -49,6 +71,14 @@ export function PhotoLightbox({ open, photos, index, onClose, onIndexChange, alt
         <X className="h-5 w-5" />
       </button>
 
+      <button
+        onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
+        aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
+        className="absolute top-4 right-20 z-10 h-11 w-11 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur border border-white/15 flex items-center justify-center text-white transition"
+      >
+        {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
+      </button>
+
       {photos.length > 1 && (
         <>
           <button
@@ -65,31 +95,50 @@ export function PhotoLightbox({ open, photos, index, onClose, onIndexChange, alt
           >
             <ChevronRight className="h-6 w-6" />
           </button>
-          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-full bg-white/10 backdrop-blur border border-white/15 px-3 py-1 text-xs font-semibold text-white">
-            {index + 1} / {photos.length}
+          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+            <div className="flex items-center gap-1.5">
+              {photos.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={(e) => { e.stopPropagation(); onIndexChange(i); }}
+                  aria-label={`Ir para foto ${i + 1}`}
+                  className={`h-1.5 rounded-full transition-all ${
+                    i === index ? "w-4 bg-white" : "w-1.5 bg-white/40"
+                  }`}
+                />
+              ))}
+            </div>
+            <div className="rounded-full bg-white/10 backdrop-blur border border-white/15 px-3 py-1 text-xs font-semibold text-white">
+              {index + 1} / {photos.length}
+            </div>
           </div>
         </>
       )}
 
-      <img
-        src={photos[index]}
-        alt={alt ?? `Foto ${index + 1}`}
+      <div
+        ref={imgWrapRef}
         onClick={(e) => e.stopPropagation()}
-        onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
-        onTouchMove={(e) => {
-          if (touchStartX.current == null) return;
-          setDragDx(e.touches[0].clientX - touchStartX.current);
-        }}
-        onTouchEnd={() => {
-          const dx = dragDx;
-          touchStartX.current = null;
-          setDragDx(0);
-          if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
-        }}
-        style={{ transform: `translateX(${dragDx}px)`, transition: dragDx === 0 ? "transform 0.2s ease" : "none" }}
-        className="max-h-[92vh] max-w-[96vw] object-contain select-none"
-        draggable={false}
-      />
+        className="relative flex items-center justify-center bg-black max-h-[92vh] max-w-[96vw] [&:fullscreen]:max-h-screen [&:fullscreen]:max-w-screen [&:fullscreen]:w-screen [&:fullscreen]:h-screen"
+      >
+        <img
+          src={photos[index]}
+          alt={alt ?? `Foto ${index + 1}`}
+          onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+          onTouchMove={(e) => {
+            if (touchStartX.current == null) return;
+            setDragDx(e.touches[0].clientX - touchStartX.current);
+          }}
+          onTouchEnd={() => {
+            const dx = dragDx;
+            touchStartX.current = null;
+            setDragDx(0);
+            if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+          }}
+          style={{ transform: `translateX(${dragDx}px)`, transition: dragDx === 0 ? "transform 0.2s ease" : "none" }}
+          className="max-h-[92vh] max-w-[96vw] w-auto h-auto object-contain select-none [div:fullscreen_&]:max-h-screen [div:fullscreen_&]:max-w-full [div:fullscreen_&]:h-screen [div:fullscreen_&]:w-screen"
+          draggable={false}
+        />
+      </div>
     </div>
   );
 }
