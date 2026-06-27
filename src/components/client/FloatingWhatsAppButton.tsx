@@ -2,14 +2,35 @@ import { useLocation } from "react-router-dom";
 import { useOptionalClientStore } from "@/contexts/ClientStoreContext";
 import { onlyDigits } from "@/lib/format";
 
+function isWhatsAppAllowed(pathname: string) {
+  // Detalhes do veículo (rotas canônicas e legadas)
+  if (
+    pathname.startsWith("/veiculo/") ||
+    pathname.startsWith("/imovel/") ||
+    pathname.startsWith("/c/") ||
+    pathname.startsWith("/v/")
+  )
+    return true;
+
+  // URL amigável canônica: /:lojaSlug/:veiculoSlug — não pode conflitar com /loja/:lojaSlug/...
+  if (/^\/[^/]+\/[^/]+$/.test(pathname)) return true;
+
+  // Vitrine e página principal da loja
+  if (pathname.startsWith("/loja/") && pathname.endsWith("/vitrine")) return true;
+  if (pathname.startsWith("/loja/") && pathname.endsWith("/sobre")) return true;
+  if (/^\/p\/[^/]+$/.test(pathname)) return true;
+
+  return false;
+}
+
 export function FloatingWhatsAppButton() {
   const location = useLocation();
   const ctx = useOptionalClientStore();
   const whatsapp = ctx?.store?.whatsapp;
 
-  // Não exibe na Academy para não poluir o layout de vídeos/aulas
-  if (location.pathname.startsWith("/academy")) return null;
+  if (!isWhatsAppAllowed(location.pathname)) return null;
   if (!whatsapp) return null;
+
 
   const digits = onlyDigits(whatsapp);
   if (!digits) return null;
