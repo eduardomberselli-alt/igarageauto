@@ -494,14 +494,14 @@ export default function ImovelPublic() {
                 <h2 className="text-sm font-bold uppercase tracking-wider mb-3">
                   Características complementares
                 </h2>
-                <ul className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <ul className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5">
                   {complementares.map((d, i) => (
                     <li
                       key={i}
-                      className="flex items-center gap-2 rounded-xl bg-card border border-border px-3 py-2 text-xs font-semibold uppercase"
+                      className="flex items-start gap-2 rounded-xl bg-card border border-border px-3 py-2.5 text-xs font-semibold uppercase leading-snug"
                     >
-                      <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
-                      <span className="truncate">{d.toUpperCase()}</span>
+                      <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                      <span className="whitespace-normal break-words">{d.toUpperCase()}</span>
                     </li>
                   ))}
                 </ul>
