@@ -14,6 +14,7 @@ export function PhotoLightbox({ open, photos, index, onClose, onIndexChange, alt
   const touchStartX = useRef<number | null>(null);
   const [dragDx, setDragDx] = useState(0);
   const imgWrapRef = useRef<HTMLDivElement | null>(null);
+  const rootRef = useRef<HTMLDivElement | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   useEffect(() => {
@@ -23,7 +24,7 @@ export function PhotoLightbox({ open, photos, index, onClose, onIndexChange, alt
   }, []);
 
   const toggleFullscreen = async () => {
-    const el = imgWrapRef.current;
+    const el = rootRef.current;
     if (!el) return;
     try {
       if (!document.fullscreenElement) {
@@ -58,6 +59,7 @@ export function PhotoLightbox({ open, photos, index, onClose, onIndexChange, alt
 
   return (
     <div
+      ref={rootRef}
       className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200"
       role="dialog"
       aria-modal="true"
@@ -66,7 +68,7 @@ export function PhotoLightbox({ open, photos, index, onClose, onIndexChange, alt
       <button
         onClick={(e) => { e.stopPropagation(); onClose(); }}
         aria-label="Fechar"
-        className="absolute top-4 right-4 z-10 h-11 w-11 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur border border-white/15 flex items-center justify-center text-white transition"
+        className="absolute top-4 right-4 z-[9999] h-11 w-11 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur border border-white/15 flex items-center justify-center text-white transition"
       >
         <X className="h-5 w-5" />
       </button>
@@ -74,7 +76,7 @@ export function PhotoLightbox({ open, photos, index, onClose, onIndexChange, alt
       <button
         onClick={(e) => { e.stopPropagation(); toggleFullscreen(); }}
         aria-label={isFullscreen ? "Sair da tela cheia" : "Tela cheia"}
-        className="absolute top-4 right-20 z-10 h-11 w-11 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur border border-white/15 flex items-center justify-center text-white transition"
+        className="absolute top-4 right-20 z-[9999] h-11 w-11 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur border border-white/15 flex items-center justify-center text-white transition"
       >
         {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
       </button>
@@ -84,18 +86,18 @@ export function PhotoLightbox({ open, photos, index, onClose, onIndexChange, alt
           <button
             onClick={(e) => { e.stopPropagation(); go(-1); }}
             aria-label="Foto anterior"
-            className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur border border-white/15 items-center justify-center text-white transition"
+            className="hidden sm:flex absolute left-4 top-1/2 -translate-y-1/2 z-[9999] h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur border border-white/15 items-center justify-center text-white transition"
           >
             <ChevronLeft className="h-6 w-6" />
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); go(1); }}
             aria-label="Próxima foto"
-            className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur border border-white/15 items-center justify-center text-white transition"
+            className="hidden sm:flex absolute right-4 top-1/2 -translate-y-1/2 z-[9999] h-12 w-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur border border-white/15 items-center justify-center text-white transition"
           >
             <ChevronRight className="h-6 w-6" />
           </button>
-          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2">
+          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-[9999] flex flex-col items-center gap-2">
             <div className="flex items-center gap-1.5">
               {photos.map((_, i) => (
                 <button
@@ -118,7 +120,7 @@ export function PhotoLightbox({ open, photos, index, onClose, onIndexChange, alt
       <div
         ref={imgWrapRef}
         onClick={(e) => e.stopPropagation()}
-        className="relative flex items-center justify-center bg-black max-h-[92vh] max-w-[96vw] [&:fullscreen]:max-h-screen [&:fullscreen]:max-w-screen [&:fullscreen]:w-screen [&:fullscreen]:h-screen"
+        className="relative z-[1] flex items-center justify-center bg-black max-h-[92vh] max-w-[96vw]"
       >
         <img
           src={photos[index]}
@@ -135,7 +137,7 @@ export function PhotoLightbox({ open, photos, index, onClose, onIndexChange, alt
             if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
           }}
           style={{ transform: `translateX(${dragDx}px)`, transition: dragDx === 0 ? "transform 0.2s ease" : "none" }}
-          className="max-h-[92vh] max-w-[96vw] w-auto h-auto object-contain select-none [div:fullscreen_&]:max-h-screen [div:fullscreen_&]:max-w-full [div:fullscreen_&]:h-screen [div:fullscreen_&]:w-screen"
+          className="max-h-[92vh] max-w-[96vw] w-auto h-auto object-contain select-none [div:fullscreen_&]:max-h-screen [div:fullscreen_&]:max-w-full"
           draggable={false}
         />
       </div>
