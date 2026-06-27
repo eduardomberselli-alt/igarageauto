@@ -14,6 +14,7 @@ import { useAdminView } from "@/contexts/AdminViewContext";
 
 import { supabase } from "@/integrations/supabase/client";
 import { compressImage, generateWatermarkPng } from "@/lib/imageCompression";
+import { formatWhatsAppMask, normalizeWhatsAppBR } from "@/lib/format";
 
 function slugify(s: string) {
   return s
@@ -130,7 +131,7 @@ export default function Perfil() {
   const buildPayload = () => ({
     nome: form.nome,
     fotoUrl: form.fotoUrl,
-    whatsapp: form.whatsapp,
+    whatsapp: normalizeWhatsAppBR(form.whatsapp),
     slug: form.slug ? slugify(form.slug) : null,
     especialidades: buildEspecialidades(form.sobre, form.infos),
     address: form.address.trim() || null,
@@ -821,12 +822,14 @@ export default function Perfil() {
             <div className="space-y-1.5">
               <Label>WhatsApp</Label>
               <Input
-                value={form.whatsapp}
-                onChange={(e) => update("whatsapp", e.target.value)}
-                placeholder="+55 (11) 98765-4321"
+                value={formatWhatsAppMask(form.whatsapp)}
+                onChange={(e) => update("whatsapp", formatWhatsAppMask(e.target.value))}
+                placeholder="(54) 99491-9887"
+                inputMode="tel"
+                maxLength={16}
               />
               <p className="text-xs text-muted-foreground">
-                Este número receberá os contatos dos clientes interessados nos veículos.
+                Digite apenas DDD + número. O código do país (+55) é adicionado automaticamente.
               </p>
             </div>
 
