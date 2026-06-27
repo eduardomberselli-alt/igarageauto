@@ -573,7 +573,7 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
           {/* 8.5 Opcionais */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label>Opcionais</Label>
+              <Label>Características complementares</Label>
             </div>
             <div className="flex flex-wrap gap-2">
               {opcionaisDisponiveis.map((opt) => {

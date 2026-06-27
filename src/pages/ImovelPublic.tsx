@@ -454,23 +454,62 @@ export default function ImovelPublic() {
         </section>
       )}
 
-      {/* 9. CARACTERÍSTICAS */}
-      {property.diferenciais.length > 0 && (
-        <section className="mt-6 px-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider mb-3">Características</h2>
-          <ul className="grid grid-cols-1 gap-2">
-            {property.diferenciais.map((d, i) => (
-              <li
-                key={i}
-                className="flex items-center gap-2.5 rounded-xl bg-card border border-border px-3.5 py-2.5 text-sm font-medium"
-              >
-                <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                <span>{formatSpecItem(d)}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      {(() => {
+        const TECH_KEYS = ["marca", "modelo", "ano", "cambio", "combustivel", "carroceria", "cor"];
+        const techItems: string[] = [];
+        const complementares: string[] = [];
+        for (const d of property.diferenciais) {
+          const m = d.match(/^([a-zA-Z]+):(.*)$/);
+          const key = m?.[1]?.toLowerCase();
+          if (key && TECH_KEYS.includes(key)) {
+            techItems.push(d);
+          } else if (key === "opcional") {
+            complementares.push(m![2].trim());
+          } else if (key === "km" || key === "video") {
+            // exibidos em outros locais — ignorar aqui
+          } else {
+            complementares.push(d);
+          }
+        }
+        return (
+          <>
+            {techItems.length > 0 && (
+              <section className="mt-6 px-4">
+                <h2 className="text-sm font-bold uppercase tracking-wider mb-3">Características</h2>
+                <ul className="grid grid-cols-1 gap-2">
+                  {techItems.map((d, i) => (
+                    <li
+                      key={i}
+                      className="flex items-center gap-2.5 rounded-xl bg-card border border-border px-3.5 py-2.5 text-sm font-medium"
+                    >
+                      <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                      <span>{formatSpecItem(d)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+            {complementares.length > 0 && (
+              <section className="mt-6 px-4">
+                <h2 className="text-sm font-bold uppercase tracking-wider mb-3">
+                  Características complementares
+                </h2>
+                <ul className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {complementares.map((d, i) => (
+                    <li
+                      key={i}
+                      className="flex items-center gap-2 rounded-xl bg-card border border-border px-3 py-2 text-xs font-semibold uppercase"
+                    >
+                      <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0" />
+                      <span className="truncate">{d.toUpperCase()}</span>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+          </>
+        );
+      })()}
 
       {/* GATILHOS DE CONFIANÇA */}
       <section className="mt-6 px-4">
