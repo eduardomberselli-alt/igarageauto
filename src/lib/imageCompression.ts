@@ -75,7 +75,7 @@ export async function compressImage(
       ctx.shadowBlur = 3;
       ctx.shadowOffsetX = 1;
       ctx.shadowOffsetY = 1;
-      ctx.globalAlpha = 0.10;
+      ctx.globalAlpha = 0.20;
       ctx.drawImage(monoCtx ? monoCanvas : watermarkImg, posicaoX, posicaoY, larguraDesejada, alturaProporcional);
 
       // Reseta sombra
@@ -87,7 +87,7 @@ export async function compressImage(
       // ---- 2) Logo SECUNDÁRIO (canto superior esquerdo, 65% opacidade) ----
       const cantoLargura = targetW * 0.18;
       const cantoAltura = (watermarkImg.height * cantoLargura) / watermarkImg.width;
-      ctx.globalAlpha = 0.65;
+      ctx.globalAlpha = 1.0;
       ctx.drawImage(watermarkImg, 25, 25, cantoLargura, cantoAltura);
 
       ctx.globalAlpha = 1.0;
