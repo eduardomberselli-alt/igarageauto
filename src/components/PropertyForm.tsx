@@ -124,6 +124,32 @@ const empty: PropertyFormValues = {
   city: null,
 };
 
+// ===== Máscaras =====
+const formatBRLInput = (digits: string) => {
+  const onlyNums = digits.replace(/\D/g, "");
+  if (!onlyNums) return "";
+  const n = Number(onlyNums) / 100;
+  return n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
+const parseBRLToNumber = (formatted: string) => {
+  const onlyNums = formatted.replace(/\D/g, "");
+  if (!onlyNums) return 0;
+  return Number(onlyNums) / 100;
+};
+
+const formatKm = (v: string) => {
+  const d = v.replace(/\D/g, "");
+  if (!d) return "";
+  return Number(d).toLocaleString("pt-BR");
+};
+
+const formatAnoModelo = (v: string) => {
+  const d = v.replace(/\D/g, "").slice(0, 8);
+  if (d.length <= 4) return d;
+  return `${d.slice(0, 4)}/${d.slice(4)}`;
+};
+
 export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
   const { user } = useAuth();
   const [form, setForm] = useState<PropertyFormValues>(empty);
@@ -329,10 +355,10 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
           <div className="space-y-1.5">
             <Label>Preço (R$)</Label>
             <Input
-              type="number"
-              value={form.preco || ""}
-              onChange={(e) => update("preco", Number(e.target.value))}
-              placeholder="Ex: 65900"
+              inputMode="numeric"
+              value={form.preco ? formatBRLInput(String(Math.round(form.preco * 100))) : ""}
+              onChange={(e) => update("preco", parseBRLToNumber(e.target.value))}
+              placeholder="Ex: 65.900,00"
             />
           </div>
 
@@ -359,21 +385,30 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
           {/* 4. Ano + KM */}
           <div className="grid grid-cols-2 gap-3">
           <div className="space-y-1.5">
-            <Label>Ano</Label>
+            <Label>Ano/Modelo</Label>
             <Input
               inputMode="numeric"
-              value={form.year ?? ""}
-              onChange={(e) => update("year", e.target.value ? Number(e.target.value) : null)}
-              placeholder="Ex: 2022"
+              value={formatAnoModelo(meta.ano || (form.year ? String(form.year) : ""))}
+              onChange={(e) => {
+                const masked = formatAnoModelo(e.target.value);
+                updateMeta("ano", masked);
+                const first = masked.slice(0, 4);
+                update("year", first.length === 4 ? Number(first) : null);
+              }}
+              maxLength={9}
+              placeholder="Ex: 2022/2023"
             />
           </div>
           <div className="space-y-1.5">
             <Label>Quilometragem (km)</Label>
             <Input
               inputMode="numeric"
-              value={form.km ?? ""}
-              onChange={(e) => update("km", e.target.value ? Number(e.target.value.replace(/\D/g, "")) : null)}
-              placeholder="Ex: 32000"
+              value={form.km != null ? formatKm(String(form.km)) : ""}
+              onChange={(e) => {
+                const digits = e.target.value.replace(/\D/g, "");
+                update("km", digits ? Number(digits) : null);
+              }}
+              placeholder="Ex: 32.000"
             />
           </div>
           </div>
