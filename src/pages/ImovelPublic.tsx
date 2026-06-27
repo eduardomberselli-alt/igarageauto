@@ -406,10 +406,10 @@ export default function ImovelPublic() {
 
         {/* Quick info: ano · km · cidade */}
         <div className="mt-4 flex items-center gap-4 flex-wrap">
-          {property.year !== null && property.year !== undefined && (
+          {anoModelo && (
             <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground">
               <Calendar className="h-4 w-4 text-primary" />
-              {property.year}
+              {anoModelo}
             </span>
           )}
           {property.km !== null && property.km !== undefined && (
