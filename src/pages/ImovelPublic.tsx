@@ -8,7 +8,7 @@ import {
   Store,
   ShieldCheck,
   RefreshCw,
-  Banknote,
+  Calculator,
   Car,
   ChevronLeft,
   ChevronRight,
@@ -537,10 +537,10 @@ export default function ImovelPublic() {
           <button
             type="button"
             onClick={() => setFinancingOpen(true)}
-            className="rounded-2xl bg-card border border-border p-3 text-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+            className="rounded-2xl bg-primary border border-primary p-3 text-center text-primary-foreground cursor-pointer transition-all duration-200 hover:scale-105 hover:shadow-[0_0_24px_hsl(var(--primary)/0.45)] animate-pulse-gold"
           >
-            <Banknote className="h-5 w-5 mx-auto text-primary" />
-            <p className="text-[11px] mt-1 font-semibold">Financiamento</p>
+            <Calculator className="h-5 w-5 mx-auto" />
+            <p className="text-[11px] mt-1 font-semibold">Simular Financiamento</p>
           </button>
         </div>
       </section>
