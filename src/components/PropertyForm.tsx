@@ -56,6 +56,30 @@ const CAMBIOS = ["Manual", "Automático", "CVT"] as const;
 const COMBUSTIVEIS = ["Flex", "Gasolina", "Diesel", "Elétrico", "Híbrido"] as const;
 const CARROCERIAS = ["Hatch", "Sedan", "SUV", "Pickup"] as const;
 
+const OPCIONAIS = [
+  "Airbag",
+  "Alarme",
+  "Ar Condicionado",
+  "Bancos de Couro",
+  "Blindado",
+  "Central Multimídia (Apple CarPlay/Android Auto)",
+  "Câmera de Ré / Sensor",
+  "Chave Presencial (Start-Stop)",
+  "Desembaçador Traseiro",
+  "Direção Hidráulica/Elétrica",
+  "Faróis de LED",
+  "Freios ABS",
+  "Piloto Automático",
+  "Teto Solar",
+  "Travas Elétricas",
+  "Tração 4x4",
+  "Turbo",
+  "Vidros Elétricos",
+  "Volante Multifuncional",
+] as const;
+
+const OPCIONAL_PREFIX = "opcional:";
+
 type AutoMeta = {
   marca: string;
   modelo: string;
@@ -98,11 +122,25 @@ function parseMeta(diferenciais: string[]): { meta: AutoMeta; rest: string[] } {
   return { meta, rest };
 }
 
-function metaToDiferenciais(meta: AutoMeta, rest: string[]): string[] {
+function parseOpcionais(rest: string[]): { opcionais: string[]; others: string[] } {
+  const opcionais: string[] = [];
+  const others: string[] = [];
+  for (const d of rest) {
+    if (d.toLowerCase().startsWith(OPCIONAL_PREFIX)) {
+      opcionais.push(d.slice(OPCIONAL_PREFIX.length));
+    } else {
+      others.push(d);
+    }
+  }
+  return { opcionais, others };
+}
+
+function metaToDiferenciais(meta: AutoMeta, opcionais: string[], rest: string[]): string[] {
   const tagged = META_KEYS
     .filter((k) => meta[k]?.trim())
     .map((k) => `${k}:${meta[k].trim()}`);
-  return [...tagged, ...rest];
+  const opcionaisTagged = opcionais.map((o) => `${OPCIONAL_PREFIX}${o}`);
+  return [...tagged, ...opcionaisTagged, ...rest];
 }
 
 const empty: PropertyFormValues = {
@@ -155,6 +193,7 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
   const [form, setForm] = useState<PropertyFormValues>(empty);
   const [meta, setMeta] = useState<AutoMeta>(emptyMeta);
   const [restDif, setRestDif] = useState<string[]>([]);
+  const [opcionais, setOpcionais] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [watermarkUrl, setWatermarkUrl] = useState<string | null>(null);
@@ -182,6 +221,7 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
         ? initial.fotosUrls
         : initial.fotoUrl ? [initial.fotoUrl] : [];
       const { meta: m, rest } = parseMeta(initial.diferenciais ?? []);
+      const { opcionais: ops, others } = parseOpcionais(rest);
       setForm({
         titulo: initial.titulo,
         preco: initial.preco,
@@ -201,10 +241,12 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
         city: initial.city ?? null,
       });
       setMeta(m);
-      setRestDif(rest);
+      setOpcionais(ops);
+      setRestDif(others);
     } else {
       setForm(empty);
       setMeta(emptyMeta);
+      setOpcionais([]);
       setRestDif([]);
     }
   }, [open, initial]);
@@ -299,7 +341,7 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
     }
     const finalForm: PropertyFormValues = {
       ...form,
-      diferenciais: metaToDiferenciais(meta, restDif),
+      diferenciais: metaToDiferenciais(meta, opcionais, restDif),
     };
     onSave(finalForm, initial?.id);
     onOpenChange(false);
@@ -456,6 +498,35 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
               onChange={(e) => update("descricao", e.target.value)}
               placeholder="Ex: Veículo em ótimo estado, revisado, único dono..."
             />
+          </div>
+
+          {/* 8.5 Opcionais */}
+          <div className="space-y-1.5">
+            <Label>Opcionais</Label>
+            <div className="flex flex-wrap gap-2">
+              {OPCIONAIS.map((opt) => {
+                const active = opcionais.includes(opt);
+                return (
+                  <button
+                    key={opt}
+                    type="button"
+                    onClick={() =>
+                      setOpcionais((prev) =>
+                        prev.includes(opt) ? prev.filter((o) => o !== opt) : [...prev, opt],
+                      )
+                    }
+                    className={cn(
+                      "px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
+                      active
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-card text-muted-foreground border-border hover:text-foreground",
+                    )}
+                  >
+                    {opt}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* 9. Fotos */}
