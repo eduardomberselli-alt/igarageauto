@@ -193,7 +193,22 @@ export default function ImovelPublic() {
   const nextPhoto = () => setActivePhoto((i) => (i + 1) % fotos.length);
   const prevPhoto = () => setActivePhoto((i) => (i - 1 + fotos.length) % fotos.length);
 
-  
+  // Ano/Modelo: prioriza o valor completo salvo nos diferenciais (ex: 2022/2023);
+  // se não existir, usa o campo year numérico.
+  const getAnoModelo = (): string | null => {
+    const anoMeta = property.diferenciais?.find((d) => /^ano:/i.test(d));
+    if (anoMeta) return anoMeta.replace(/^ano:\s*/i, "");
+    if (property.year !== null && property.year !== undefined) return String(property.year);
+    return null;
+  };
+
+  const anoModelo = getAnoModelo();
+
+  // Padroniza texto das características: "chave:valor" -> "CHAVE: VALOR".
+  const formatSpecItem = (text: string) =>
+    text
+      .replace(/^([^:]+):(.+)$/, (_, key, value) => `${key.trim()}: ${value.trim()}`)
+      .toUpperCase();
 
   // Cards de características — só mostra blocos com dados reais
   const specs: { label: string; value: string }[] = [];
@@ -391,10 +406,10 @@ export default function ImovelPublic() {
 
         {/* Quick info: ano · km · cidade */}
         <div className="mt-4 flex items-center gap-4 flex-wrap">
-          {property.year !== null && property.year !== undefined && (
+          {anoModelo && (
             <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground">
               <Calendar className="h-4 w-4 text-primary" />
-              {property.year}
+              {anoModelo}
             </span>
           )}
           {property.km !== null && property.km !== undefined && (
@@ -439,10 +454,10 @@ export default function ImovelPublic() {
         </section>
       )}
 
-      {/* 9. DIFERENCIAIS */}
+      {/* 9. CARACTERÍSTICAS */}
       {property.diferenciais.length > 0 && (
         <section className="mt-6 px-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider mb-3">Diferenciais</h2>
+          <h2 className="text-sm font-bold uppercase tracking-wider mb-3">Características</h2>
           <ul className="grid grid-cols-1 gap-2">
             {property.diferenciais.map((d, i) => (
               <li
@@ -450,7 +465,7 @@ export default function ImovelPublic() {
                 className="flex items-center gap-2.5 rounded-xl bg-card border border-border px-3.5 py-2.5 text-sm font-medium"
               >
                 <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
-                <span>{d}</span>
+                <span>{formatSpecItem(d)}</span>
               </li>
             ))}
           </ul>
