@@ -50,35 +50,48 @@ export async function compressImage(
     const watermarkImg = opts.watermarkImage
       ?? (opts.watermarkUrl ? await loadImageCORS(opts.watermarkUrl).catch(() => null) : null);
     if (watermarkImg) {
-      // Sombra projetada para contraste em fotos claras
-      ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
-      ctx.shadowBlur = 6;
-      ctx.shadowOffsetX = 2;
-      ctx.shadowOffsetY = 2;
-
-      // A imagem da marca d'água já vem com opacidade 75% pré-aplicada do perfil
-      ctx.globalAlpha = 1.0;
-
-      // CÁLCULO DA LARGURA EM 58% (Forçando ficar grande de verdade)
+      // ---- 1) Marca d'água CENTRAL (monocromática, 10% opacidade) ----
       const larguraDesejada = targetW * 0.58;
-
-      // Calcula a altura proporcional para NUNCA distorcer ou amassar
       const alturaProporcional = (watermarkImg.height * larguraDesejada) / watermarkImg.width;
-
-      // Centralização absoluta na foto do carro
       const posicaoX = (targetW / 2) - (larguraDesejada / 2);
       const posicaoY = (targetH / 2) - (alturaProporcional / 2);
 
-      // Desenha a logo grande por cima da foto do veículo
-      ctx.drawImage(watermarkImg, posicaoX, posicaoY, larguraDesejada, alturaProporcional);
+      // Pré-renderiza versão branca/monocromática do logo num canvas off-screen
+      const monoCanvas = document.createElement("canvas");
+      monoCanvas.width = Math.max(1, Math.round(larguraDesejada));
+      monoCanvas.height = Math.max(1, Math.round(alturaProporcional));
+      const monoCtx = monoCanvas.getContext("2d");
+      if (monoCtx) {
+        // Desenha o logo e força branco preservando o alpha (silhueta branca)
+        monoCtx.drawImage(watermarkImg, 0, 0, monoCanvas.width, monoCanvas.height);
+        monoCtx.globalCompositeOperation = "source-in";
+        monoCtx.fillStyle = "#FFFFFF";
+        monoCtx.fillRect(0, 0, monoCanvas.width, monoCanvas.height);
+        monoCtx.globalCompositeOperation = "source-over";
+      }
 
-      // Reseta sombra e opacidade
+      // Sombra sutil para leitura em fundos claros
+      ctx.shadowColor = "rgba(0, 0, 0, 0.45)";
+      ctx.shadowBlur = 3;
+      ctx.shadowOffsetX = 1;
+      ctx.shadowOffsetY = 1;
+      ctx.globalAlpha = 0.10;
+      ctx.drawImage(monoCtx ? monoCanvas : watermarkImg, posicaoX, posicaoY, larguraDesejada, alturaProporcional);
+
+      // Reseta sombra
       ctx.shadowColor = "transparent";
       ctx.shadowBlur = 0;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
 
-      console.log("LOG: Marca d'água aplicada com largura de:", larguraDesejada, "px no centro.");
+      // ---- 2) Logo SECUNDÁRIO (canto superior esquerdo, 65% opacidade) ----
+      const cantoLargura = targetW * 0.18;
+      const cantoAltura = (watermarkImg.height * cantoLargura) / watermarkImg.width;
+      ctx.globalAlpha = 0.65;
+      ctx.drawImage(watermarkImg, 25, 25, cantoLargura, cantoAltura);
+
+      ctx.globalAlpha = 1.0;
+      console.log("LOG: Marca d'água central (mono 10%) + logo canto (65%) aplicadas.");
     } else if (opts.watermarkText) {
       // Fallback se não tiver imagem
       ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
