@@ -572,33 +572,53 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
 
           {/* 8.5 Opcionais */}
           <div className="space-y-1.5">
-            <Label>Opcionais</Label>
+            <div className="flex items-center justify-between">
+              <Label>Opcionais</Label>
+            </div>
             <div className="flex flex-wrap gap-2">
               {opcionaisDisponiveis.map((opt) => {
-                const active = opcionais.includes(opt);
+                const active = opcionais.includes(opt.nome);
+                const showDelete = manageMode && opt.isCustom;
                 return (
-                  <button
-                    key={opt}
-                    type="button"
-                    onClick={() =>
-                      setOpcionais((prev) =>
-                        prev.includes(opt) ? prev.filter((o) => o !== opt) : [...prev, opt],
-                      )
-                    }
-                    className={cn(
-                      "px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
-                      active
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-card text-muted-foreground border-border hover:text-foreground",
+                  <div key={opt.id} className="relative">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setOpcionais((prev) =>
+                          prev.includes(opt.nome)
+                            ? prev.filter((o) => o !== opt.nome)
+                            : [...prev, opt.nome],
+                        )
+                      }
+                      className={cn(
+                        "px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
+                        showDelete && "pr-7",
+                        active
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-card text-muted-foreground border-border hover:text-foreground",
+                      )}
+                    >
+                      {opt.nome}
+                    </button>
+                    {showDelete && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteOpcional(opt);
+                        }}
+                        aria-label={`Remover ${opt.nome} do sistema`}
+                        className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground shadow flex items-center justify-center hover:scale-110 transition-transform"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
                     )}
-                  >
-                    {opt}
-                  </button>
+                  </div>
                 );
               })}
               {/* Selecionados que ainda não existem na lista global (ex: vindos do veículo) */}
               {opcionais
-                .filter((o) => !opcionaisDisponiveis.includes(o))
+                .filter((o) => !opcionaisDisponiveis.some((d) => d.nome === o))
                 .map((opt) => (
                   <button
                     key={`legacy-${opt}`}
@@ -651,16 +671,38 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
                   </button>
                 </div>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => setAddingOpcional(true)}
-                  className="px-3 py-1.5 rounded-full text-xs font-medium border border-dashed border-primary/60 text-primary hover:bg-primary/10 transition-colors flex items-center gap-1"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  Adicionar
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setAddingOpcional(true)}
+                    className="px-3 py-1.5 rounded-full text-xs font-medium border border-dashed border-primary/60 text-primary hover:bg-primary/10 transition-colors flex items-center gap-1"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Adicionar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setManageMode((v) => !v)}
+                    aria-label="Gerenciar opcionais"
+                    title={manageMode ? "Concluir gerenciamento" : "Gerenciar opcionais"}
+                    className={cn(
+                      "px-3 py-1.5 rounded-full text-xs font-medium border transition-colors flex items-center gap-1",
+                      manageMode
+                        ? "border-destructive text-destructive bg-destructive/10"
+                        : "border-border text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {manageMode ? <X className="h-3.5 w-3.5" /> : <Settings className="h-3.5 w-3.5" />}
+                    {manageMode ? "Concluir" : "Gerenciar"}
+                  </button>
+                </>
               )}
             </div>
+            {manageMode && (
+              <p className="text-[11px] text-muted-foreground">
+                Toque no <span className="text-destructive font-medium">×</span> de um opcional para removê-lo permanentemente do sistema. Itens padrão são protegidos.
+              </p>
+            )}
           </div>
 
           {/* 9. Fotos */}
