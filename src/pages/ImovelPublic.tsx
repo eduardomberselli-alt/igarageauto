@@ -64,6 +64,16 @@ export default function ImovelPublic() {
     }
   }, [clientStoreCtx, ownerProfile]);
 
+  // Disponibiliza dados do veículo para o botão flutuante de WhatsApp
+  useEffect(() => {
+    if (!clientStoreCtx || !property) return;
+    const anoMeta = property.diferenciais?.find((d) => /^ano:/i.test(d));
+    const ano = anoMeta ? anoMeta.replace(/^ano:\s*/i, "") : property.year ? String(property.year) : null;
+    const url = vehicleUrl(property, ownerProfile?.slug);
+    clientStoreCtx.setCurrentVehicle({ titulo: property.titulo, ano, url });
+    return () => clientStoreCtx.setCurrentVehicle(null);
+  }, [clientStoreCtx, property, ownerProfile?.slug]);
+
   // Incrementa contador de visualizações do dia — apenas para clientes (não conta a prévia do lojista)
   useEffect(() => {
     if (!property?.id || !isClientMode) return;
