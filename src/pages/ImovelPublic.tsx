@@ -26,6 +26,7 @@ import { FavoriteButton } from "@/components/FavoriteButton";
 import { ClientSocialLinks } from "@/components/client/ClientSocialLinks";
 import { StoreLogo } from "@/components/client/StoreLogo";
 import { PhotoLightbox } from "@/components/client/PhotoLightbox";
+import { FinancingModal } from "@/components/client/FinancingModal";
 
 import { usePublicProperty, usePublicPropertyBySlug, registerLead } from "@/hooks/useAppData";
 import { vehiclePath, vehicleUrl } from "@/lib/vehicleUrl";
@@ -49,6 +50,7 @@ export default function ImovelPublic() {
   const { property, ownerProfile, loading } = isSlugRoute ? bySlug : byId;
   const [activePhoto, setActivePhoto] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [financingOpen, setFinancingOpen] = useState(false);
   const clientStoreCtx = useOptionalClientStore();
   const { isAdminMode, isClientMode } = useUserMode(property?.ownerId);
 
@@ -532,12 +534,24 @@ export default function ImovelPublic() {
             <RefreshCw className="h-5 w-5 mx-auto text-primary" />
             <p className="text-[11px] mt-1 font-semibold">Aceita troca</p>
           </div>
-          <div className="rounded-2xl bg-card border border-border p-3 text-center">
+          <button
+            type="button"
+            onClick={() => setFinancingOpen(true)}
+            className="rounded-2xl bg-card border border-border p-3 text-center cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+          >
             <Banknote className="h-5 w-5 mx-auto text-primary" />
             <p className="text-[11px] mt-1 font-semibold">Financiamento</p>
-          </div>
+          </button>
         </div>
       </section>
+
+      <FinancingModal
+        open={financingOpen}
+        onOpenChange={setFinancingOpen}
+        whatsapp={ownerProfile?.whatsapp}
+        vehicleTitle={property.titulo}
+        vehicleYear={anoModelo}
+      />
 
       {/* Localização */}
       {(property.latitude || property.endereco) && (
