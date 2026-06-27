@@ -14,6 +14,7 @@ import { useAdminView } from "@/contexts/AdminViewContext";
 
 import { supabase } from "@/integrations/supabase/client";
 import { compressImage, generateWatermarkPng } from "@/lib/imageCompression";
+import { formatWhatsAppMask, normalizeWhatsAppBR } from "@/lib/format";
 
 function slugify(s: string) {
   return s
@@ -130,7 +131,7 @@ export default function Perfil() {
   const buildPayload = () => ({
     nome: form.nome,
     fotoUrl: form.fotoUrl,
-    whatsapp: form.whatsapp,
+    whatsapp: normalizeWhatsAppBR(form.whatsapp),
     slug: form.slug ? slugify(form.slug) : null,
     especialidades: buildEspecialidades(form.sobre, form.infos),
     address: form.address.trim() || null,
