@@ -84,11 +84,11 @@ export async function compressImage(
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
 
-      // ---- 2) Logo SECUNDÁRIO (canto superior esquerdo, 65% opacidade) ----
-      const cantoLargura = targetW * 0.18;
+      // ---- 2) Logo SECUNDÁRIO (canto superior esquerdo, 100% opacidade, 40px margem) ----
+      const cantoLargura = targetW * 0.18 * 1.5;
       const cantoAltura = (watermarkImg.height * cantoLargura) / watermarkImg.width;
       ctx.globalAlpha = 1.0;
-      ctx.drawImage(watermarkImg, 25, 25, cantoLargura, cantoAltura);
+      ctx.drawImage(watermarkImg, 40, 40, cantoLargura, cantoAltura);
 
       ctx.globalAlpha = 1.0;
       console.log("LOG: Marca d'água central (mono 10%) + logo canto (65%) aplicadas.");
