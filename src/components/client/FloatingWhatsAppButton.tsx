@@ -2,6 +2,21 @@ import { useLocation } from "react-router-dom";
 import { useOptionalClientStore } from "@/contexts/ClientStoreContext";
 import { onlyDigits } from "@/lib/format";
 
+const GENERIC_MESSAGE =
+  "Olá! Gostaria de falar com um consultor para conhecer os veículos disponíveis no estoque e tirar algumas dúvidas.";
+
+function isVehiclePath(pathname: string) {
+  if (
+    pathname.startsWith("/veiculo/") ||
+    pathname.startsWith("/imovel/") ||
+    pathname.startsWith("/c/") ||
+    pathname.startsWith("/v/")
+  )
+    return true;
+  if (/^\/[^/]+\/[^/]+$/.test(pathname) && !pathname.startsWith("/loja/")) return true;
+  return false;
+}
+
 function isWhatsAppAllowed(pathname: string) {
   // Detalhes do veículo (rotas canônicas e legadas)
   if (
@@ -27,6 +42,7 @@ export function FloatingWhatsAppButton() {
   const location = useLocation();
   const ctx = useOptionalClientStore();
   const whatsapp = ctx?.store?.whatsapp;
+  const vehicle = ctx?.currentVehicle;
 
   if (!isWhatsAppAllowed(location.pathname)) return null;
   if (!whatsapp) return null;
@@ -35,7 +51,12 @@ export function FloatingWhatsAppButton() {
   const digits = onlyDigits(whatsapp);
   if (!digits) return null;
 
-  const href = `https://wa.me/${digits}`;
+  let message = GENERIC_MESSAGE;
+  if (isVehiclePath(location.pathname) && vehicle) {
+    const ano = vehicle.ano ? ` ${vehicle.ano}` : "";
+    message = `Olá! Vi o ${vehicle.titulo}${ano} e gostaria de receber mais informações sobre ele. Segue o link do veículo: ${vehicle.url}`;
+  }
+  const href = `https://wa.me/${digits}?text=${encodeURIComponent(message)}`;
 
   return (
     <a
