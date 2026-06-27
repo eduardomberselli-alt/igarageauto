@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { X, Upload, Loader2, Star } from "lucide-react";
+import { X, Upload, Loader2, Star, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -55,28 +55,6 @@ const MAX_PHOTO_SIZE_MB = 1;
 const CAMBIOS = ["Manual", "Automático", "CVT"] as const;
 const COMBUSTIVEIS = ["Flex", "Gasolina", "Diesel", "Elétrico", "Híbrido"] as const;
 const CARROCERIAS = ["Hatch", "Sedan", "SUV", "Pickup"] as const;
-
-const OPCIONAIS = [
-  "Airbag",
-  "Alarme",
-  "Ar Condicionado",
-  "Bancos de Couro",
-  "Blindado",
-  "Central Multimídia (Apple CarPlay/Android Auto)",
-  "Câmera de Ré / Sensor",
-  "Chave Presencial (Start-Stop)",
-  "Desembaçador Traseiro",
-  "Direção Hidráulica/Elétrica",
-  "Faróis de LED",
-  "Freios ABS",
-  "Piloto Automático",
-  "Teto Solar",
-  "Travas Elétricas",
-  "Tração 4x4",
-  "Turbo",
-  "Vidros Elétricos",
-  "Volante Multifuncional",
-] as const;
 
 const OPCIONAL_PREFIX = "opcional:";
 
@@ -197,6 +175,64 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [watermarkUrl, setWatermarkUrl] = useState<string | null>(null);
+  const [opcionaisDisponiveis, setOpcionaisDisponiveis] = useState<string[]>([]);
+  const [addingOpcional, setAddingOpcional] = useState(false);
+  const [novoOpcional, setNovoOpcional] = useState("");
+  const [savingOpcional, setSavingOpcional] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const { data, error } = await supabase
+        .from("opcionais_disponiveis")
+        .select("nome")
+        .order("nome", { ascending: true });
+      if (!active) return;
+      if (error) {
+        console.error("Erro ao carregar opcionais:", error);
+        return;
+      }
+      setOpcionaisDisponiveis((data ?? []).map((r: any) => r.nome as string));
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleAddOpcional = async () => {
+    const nome = novoOpcional.trim();
+    if (!nome) return;
+    if (!user) {
+      toast.error("Faça login para adicionar opcionais");
+      return;
+    }
+    const exists = opcionaisDisponiveis.find(
+      (o) => o.toLowerCase() === nome.toLowerCase(),
+    );
+    if (exists) {
+      if (!opcionais.includes(exists)) setOpcionais((p) => [...p, exists]);
+      setNovoOpcional("");
+      setAddingOpcional(false);
+      toast.info("Opcional já existia — selecionado para este veículo");
+      return;
+    }
+    setSavingOpcional(true);
+    const { data, error } = await supabase
+      .from("opcionais_disponiveis")
+      .insert({ nome, created_by: user.id })
+      .select("nome")
+      .single();
+    setSavingOpcional(false);
+    if (error || !data) {
+      toast.error(`Não foi possível salvar: ${error?.message ?? "erro"}`);
+      return;
+    }
+    setOpcionaisDisponiveis((prev) => [...prev, data.nome].sort((a, b) => a.localeCompare(b, "pt-BR")));
+    setOpcionais((prev) => [...prev, data.nome]);
+    setNovoOpcional("");
+    setAddingOpcional(false);
+    toast.success("Opcional adicionado");
+  };
 
   useEffect(() => {
     let active = true;
@@ -504,7 +540,7 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
           <div className="space-y-1.5">
             <Label>Opcionais</Label>
             <div className="flex flex-wrap gap-2">
-              {OPCIONAIS.map((opt) => {
+              {opcionaisDisponiveis.map((opt) => {
                 const active = opcionais.includes(opt);
                 return (
                   <button
@@ -526,6 +562,70 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
                   </button>
                 );
               })}
+              {/* Selecionados que ainda não existem na lista global (ex: vindos do veículo) */}
+              {opcionais
+                .filter((o) => !opcionaisDisponiveis.includes(o))
+                .map((opt) => (
+                  <button
+                    key={`legacy-${opt}`}
+                    type="button"
+                    onClick={() => setOpcionais((prev) => prev.filter((o) => o !== opt))}
+                    className="px-3 py-1.5 rounded-full text-xs font-medium border transition-colors bg-primary text-primary-foreground border-primary"
+                  >
+                    {opt}
+                  </button>
+                ))}
+
+              {addingOpcional ? (
+                <div className="flex items-center gap-1.5">
+                  <Input
+                    autoFocus
+                    value={novoOpcional}
+                    onChange={(e) => setNovoOpcional(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleAddOpcional();
+                      } else if (e.key === "Escape") {
+                        setAddingOpcional(false);
+                        setNovoOpcional("");
+                      }
+                    }}
+                    placeholder="Ex: Frenagem Autônoma"
+                    className="h-8 w-48 text-xs"
+                    disabled={savingOpcional}
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="h-8 px-2 text-xs"
+                    onClick={handleAddOpcional}
+                    disabled={savingOpcional || !novoOpcional.trim()}
+                  >
+                    {savingOpcional ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Salvar"}
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAddingOpcional(false);
+                      setNovoOpcional("");
+                    }}
+                    className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground"
+                    aria-label="Cancelar"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setAddingOpcional(true)}
+                  className="px-3 py-1.5 rounded-full text-xs font-medium border border-dashed border-primary/60 text-primary hover:bg-primary/10 transition-colors flex items-center gap-1"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  Adicionar
+                </button>
+              )}
             </div>
           </div>
 
