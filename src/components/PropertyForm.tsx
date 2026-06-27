@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { X, Upload, Loader2, Star, Plus } from "lucide-react";
+import { X, Upload, Loader2, Star, Plus, Settings, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -175,24 +175,32 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [watermarkUrl, setWatermarkUrl] = useState<string | null>(null);
-  const [opcionaisDisponiveis, setOpcionaisDisponiveis] = useState<string[]>([]);
+  type OpcionalRow = { id: string; nome: string; isCustom: boolean };
+  const [opcionaisDisponiveis, setOpcionaisDisponiveis] = useState<OpcionalRow[]>([]);
   const [addingOpcional, setAddingOpcional] = useState(false);
   const [novoOpcional, setNovoOpcional] = useState("");
   const [savingOpcional, setSavingOpcional] = useState(false);
+  const [manageMode, setManageMode] = useState(false);
 
   useEffect(() => {
     let active = true;
     (async () => {
       const { data, error } = await supabase
         .from("opcionais_disponiveis")
-        .select("nome")
+        .select("id, nome, created_by")
         .order("nome", { ascending: true });
       if (!active) return;
       if (error) {
         console.error("Erro ao carregar opcionais:", error);
         return;
       }
-      setOpcionaisDisponiveis((data ?? []).map((r: any) => r.nome as string));
+      setOpcionaisDisponiveis(
+        (data ?? []).map((r: any) => ({
+          id: r.id as string,
+          nome: r.nome as string,
+          isCustom: r.created_by !== null,
+        })),
+      );
     })();
     return () => {
       active = false;
@@ -207,10 +215,10 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
       return;
     }
     const exists = opcionaisDisponiveis.find(
-      (o) => o.toLowerCase() === nome.toLowerCase(),
+      (o) => o.nome.toLowerCase() === nome.toLowerCase(),
     );
     if (exists) {
-      if (!opcionais.includes(exists)) setOpcionais((p) => [...p, exists]);
+      if (!opcionais.includes(exists.nome)) setOpcionais((p) => [...p, exists.nome]);
       setNovoOpcional("");
       setAddingOpcional(false);
       toast.info("Opcional já existia — selecionado para este veículo");
@@ -220,18 +228,44 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
     const { data, error } = await supabase
       .from("opcionais_disponiveis")
       .insert({ nome, created_by: user.id })
-      .select("nome")
+      .select("id, nome, created_by")
       .single();
     setSavingOpcional(false);
     if (error || !data) {
       toast.error(`Não foi possível salvar: ${error?.message ?? "erro"}`);
       return;
     }
-    setOpcionaisDisponiveis((prev) => [...prev, data.nome].sort((a, b) => a.localeCompare(b, "pt-BR")));
-    setOpcionais((prev) => [...prev, data.nome]);
+    setOpcionaisDisponiveis((prev) =>
+      [...prev, { id: (data as any).id, nome: (data as any).nome, isCustom: true }].sort(
+        (a, b) => a.nome.localeCompare(b.nome, "pt-BR"),
+      ),
+    );
+    setOpcionais((prev) => [...prev, (data as any).nome]);
     setNovoOpcional("");
     setAddingOpcional(false);
     toast.success("Opcional adicionado");
+  };
+
+  const handleDeleteOpcional = async (row: OpcionalRow) => {
+    if (!row.isCustom) {
+      toast.error("Opcionais padrão do sistema não podem ser removidos");
+      return;
+    }
+    const ok = window.confirm(
+      "Tem certeza que deseja deletar este opcional permanentemente do sistema? Isso o removerá de futuros cadastros.",
+    );
+    if (!ok) return;
+    const { error } = await supabase
+      .from("opcionais_disponiveis")
+      .delete()
+      .eq("id", row.id);
+    if (error) {
+      toast.error(`Não foi possível deletar: ${error.message}`);
+      return;
+    }
+    setOpcionaisDisponiveis((prev) => prev.filter((o) => o.id !== row.id));
+    setOpcionais((prev) => prev.filter((n) => n !== row.nome));
+    toast.success("Opcional removido");
   };
 
   useEffect(() => {
@@ -538,33 +572,53 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
 
           {/* 8.5 Opcionais */}
           <div className="space-y-1.5">
-            <Label>Opcionais</Label>
+            <div className="flex items-center justify-between">
+              <Label>Opcionais</Label>
+            </div>
             <div className="flex flex-wrap gap-2">
               {opcionaisDisponiveis.map((opt) => {
-                const active = opcionais.includes(opt);
+                const active = opcionais.includes(opt.nome);
+                const showDelete = manageMode && opt.isCustom;
                 return (
-                  <button
-                    key={opt}
-                    type="button"
-                    onClick={() =>
-                      setOpcionais((prev) =>
-                        prev.includes(opt) ? prev.filter((o) => o !== opt) : [...prev, opt],
-                      )
-                    }
-                    className={cn(
-                      "px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
-                      active
-                        ? "bg-primary text-primary-foreground border-primary"
-                        : "bg-card text-muted-foreground border-border hover:text-foreground",
+                  <div key={opt.id} className="relative">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setOpcionais((prev) =>
+                          prev.includes(opt.nome)
+                            ? prev.filter((o) => o !== opt.nome)
+                            : [...prev, opt.nome],
+                        )
+                      }
+                      className={cn(
+                        "px-3 py-1.5 rounded-full text-xs font-medium border transition-colors",
+                        showDelete && "pr-7",
+                        active
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-card text-muted-foreground border-border hover:text-foreground",
+                      )}
+                    >
+                      {opt.nome}
+                    </button>
+                    {showDelete && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteOpcional(opt);
+                        }}
+                        aria-label={`Remover ${opt.nome} do sistema`}
+                        className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground shadow flex items-center justify-center hover:scale-110 transition-transform"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
                     )}
-                  >
-                    {opt}
-                  </button>
+                  </div>
                 );
               })}
               {/* Selecionados que ainda não existem na lista global (ex: vindos do veículo) */}
               {opcionais
-                .filter((o) => !opcionaisDisponiveis.includes(o))
+                .filter((o) => !opcionaisDisponiveis.some((d) => d.nome === o))
                 .map((opt) => (
                   <button
                     key={`legacy-${opt}`}
@@ -617,16 +671,38 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
                   </button>
                 </div>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => setAddingOpcional(true)}
-                  className="px-3 py-1.5 rounded-full text-xs font-medium border border-dashed border-primary/60 text-primary hover:bg-primary/10 transition-colors flex items-center gap-1"
-                >
-                  <Plus className="h-3.5 w-3.5" />
-                  Adicionar
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setAddingOpcional(true)}
+                    className="px-3 py-1.5 rounded-full text-xs font-medium border border-dashed border-primary/60 text-primary hover:bg-primary/10 transition-colors flex items-center gap-1"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Adicionar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setManageMode((v) => !v)}
+                    aria-label="Gerenciar opcionais"
+                    title={manageMode ? "Concluir gerenciamento" : "Gerenciar opcionais"}
+                    className={cn(
+                      "px-3 py-1.5 rounded-full text-xs font-medium border transition-colors flex items-center gap-1",
+                      manageMode
+                        ? "border-destructive text-destructive bg-destructive/10"
+                        : "border-border text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {manageMode ? <X className="h-3.5 w-3.5" /> : <Settings className="h-3.5 w-3.5" />}
+                    {manageMode ? "Concluir" : "Gerenciar"}
+                  </button>
+                </>
               )}
             </div>
+            {manageMode && (
+              <p className="text-[11px] text-muted-foreground">
+                Toque no <span className="text-destructive font-medium">×</span> de um opcional para removê-lo permanentemente do sistema. Itens padrão são protegidos.
+              </p>
+            )}
           </div>
 
           {/* 9. Fotos */}
