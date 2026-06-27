@@ -87,11 +87,47 @@ export async function compressImage(
       // ---- 2) Logo SECUNDÁRIO (canto superior esquerdo, 100% opacidade, 40px margem) ----
       const cantoLargura = targetW * 0.18 * 1.5;
       const cantoAltura = (watermarkImg.height * cantoLargura) / watermarkImg.width;
+      const padding = 15;
+      const bannerX = 40;
+      const bannerY = 40;
+      const bannerW = cantoLargura + padding * 2;
+      const bannerH = cantoAltura + padding * 2;
+      const logoX = bannerX + padding;
+      const logoY = bannerY + padding;
+      const radius = 18;
+
+      // Aplica blur no fundo por trás do banner (backdrop-blur)
+      ctx.save();
+      ctx.filter = "blur(10px)";
+      ctx.globalAlpha = 0.85;
+      ctx.drawImage(canvas, bannerX, bannerY, bannerW, bannerH, bannerX, bannerY, bannerW, bannerH);
+      ctx.restore();
+
+      // Preenchimento branco translúcido do banner (glassmorphism)
+      ctx.save();
+      ctx.beginPath();
+      roundRectPath(ctx, bannerX, bannerY, bannerW, bannerH, radius);
+      ctx.closePath();
+      ctx.fillStyle = "rgba(255, 255, 255, 0.25)";
+      ctx.fill();
+      ctx.restore();
+
+      // Borda sutil do vidro
+      ctx.save();
+      ctx.beginPath();
+      roundRectPath(ctx, bannerX, bannerY, bannerW, bannerH, radius);
+      ctx.closePath();
+      ctx.lineWidth = 1.5;
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
+      ctx.stroke();
+      ctx.restore();
+
+      // Logo colorido e nítido centralizado no banner
       ctx.globalAlpha = 1.0;
-      ctx.drawImage(watermarkImg, 40, 40, cantoLargura, cantoAltura);
+      ctx.drawImage(watermarkImg, logoX, logoY, cantoLargura, cantoAltura);
 
       ctx.globalAlpha = 1.0;
-      console.log("LOG: Marca d'água central (mono 10%) + logo canto (65%) aplicadas.");
+      console.log("LOG: Marca d'água central (mono 20%) + logo canto com glassmorphism aplicadas.");
     } else if (opts.watermarkText) {
       // Fallback se não tiver imagem
       ctx.shadowColor = "rgba(0, 0, 0, 0.5)";
