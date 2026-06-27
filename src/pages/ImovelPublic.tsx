@@ -193,7 +193,22 @@ export default function ImovelPublic() {
   const nextPhoto = () => setActivePhoto((i) => (i + 1) % fotos.length);
   const prevPhoto = () => setActivePhoto((i) => (i - 1 + fotos.length) % fotos.length);
 
-  
+  // Ano/Modelo: prioriza o valor completo salvo nos diferenciais (ex: 2022/2023);
+  // se não existir, usa o campo year numérico.
+  const getAnoModelo = (): string | null => {
+    const anoMeta = property.diferenciais?.find((d) => /^ano:/i.test(d));
+    if (anoMeta) return anoMeta.replace(/^ano:\s*/i, "");
+    if (property.year !== null && property.year !== undefined) return String(property.year);
+    return null;
+  };
+
+  const anoModelo = getAnoModelo();
+
+  // Padroniza texto das características: "chave:valor" -> "CHAVE: VALOR".
+  const formatSpecItem = (text: string) =>
+    text
+      .replace(/^([^:]+):(.+)$/, (_, key, value) => `${key.trim()}: ${value.trim()}`)
+      .toUpperCase();
 
   // Cards de características — só mostra blocos com dados reais
   const specs: { label: string; value: string }[] = [];
