@@ -526,9 +526,6 @@ export default function ImovelPublic() {
           </button>
         </section>
       )}
-
-      {/* Balão de conversa do WhatsApp — exclusivo da landing do veículo */}
-      {!property.vendido && waUrl && <WhatsAppChatBubble />}
     </div>
   );
 }
