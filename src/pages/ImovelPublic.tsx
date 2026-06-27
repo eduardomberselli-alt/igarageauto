@@ -8,7 +8,7 @@ import {
   Store,
   ShieldCheck,
   RefreshCw,
-  Banknote,
+  Calculator,
   Car,
   ChevronLeft,
   ChevronRight,
