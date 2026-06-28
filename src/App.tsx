@@ -31,6 +31,7 @@ import ClientSalvos from "./pages/client/ClientSalvos";
 import ClientLoja from "./pages/client/ClientLoja";
 import ClientVehicleRedirect from "./pages/client/ClientVehicleRedirect";
 import ClientAcademy from "./pages/client/ClientAcademy";
+import ShareRedirect from "./pages/ShareRedirect";
 import Auth from "./pages/Auth";
 import AdminCorretores from "./pages/admin/AdminCorretores";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -71,12 +72,13 @@ const App = () => (
               {/* Públicas */}
               <Route path="/auth" element={<Auth />} />
               <Route path="/register" element={<RegisterRedirect />} />
+              {/* Ponte de rastreamento de compartilhamento (link curto/limpo) */}
+              <Route path="/c/:trackingCode" element={<ShareRedirect />} />
               {/* Experiência de cliente — bottom nav + contexto de loja */}
               <Route element={<ClientLayout />}>
                 <Route path="/v/:veiculoSlug" element={<ClientVehicleRedirect />} />
                 <Route path="/veiculo/:id" element={<ImovelPublic />} />
                 <Route path="/imovel/:id" element={<ImovelPublic />} />
-                <Route path="/c/:id" element={<ImovelPublic />} />
                 <Route path="/p/:lojaSlug" element={<ClientVitrine />} />
                 <Route path="/loja/:lojaSlug" element={<Navigate to="vitrine" replace />} />
                 <Route path="/loja/:lojaSlug/vitrine" element={<ClientVitrine />} />
