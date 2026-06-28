@@ -17,6 +17,24 @@ export function PhotoLightbox({ open, photos, index, onClose, onIndexChange, alt
   const rootRef = useRef<HTMLDivElement | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  const [scale, setScale] = useState(1);
+  const [tx, setTx] = useState(0);
+  const [ty, setTy] = useState(0);
+  const pinchStartDist = useRef<number | null>(null);
+  const pinchStartScale = useRef(1);
+  const panStart = useRef<{ x: number; y: number; tx: number; ty: number } | null>(null);
+  const lastTapRef = useRef(0);
+
+  const resetZoom = () => {
+    setScale(1);
+    setTx(0);
+    setTy(0);
+  };
+
+  useEffect(() => {
+    resetZoom();
+  }, [index, open]);
+
   useEffect(() => {
     const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
     document.addEventListener("fullscreenchange", onFsChange);
@@ -56,6 +74,24 @@ export function PhotoLightbox({ open, photos, index, onClose, onIndexChange, alt
   if (!open || !photos.length) return null;
 
   const go = (dir: 1 | -1) => onIndexChange((index + dir + photos.length) % photos.length);
+
+  const distance = (touches: React.TouchList) => {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.hypot(dx, dy);
+  };
+
+  const clampTranslate = (nx: number, ny: number, s: number) => {
+    const el = imgWrapRef.current;
+    if (!el) return { x: nx, y: ny };
+    const rect = el.getBoundingClientRect();
+    const maxX = (rect.width * (s - 1)) / 2;
+    const maxY = (rect.height * (s - 1)) / 2;
+    return {
+      x: Math.max(-maxX, Math.min(maxX, nx)),
+      y: Math.max(-maxY, Math.min(maxY, ny)),
+    };
+  };
 
   return (
     <div
@@ -125,18 +161,70 @@ export function PhotoLightbox({ open, photos, index, onClose, onIndexChange, alt
         <img
           src={photos[index]}
           alt={alt ?? `Foto ${index + 1}`}
-          onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
+          onTouchStart={(e) => {
+            if (e.touches.length === 2) {
+              pinchStartDist.current = distance(e.touches);
+              pinchStartScale.current = scale;
+              touchStartX.current = null;
+              panStart.current = null;
+            } else if (e.touches.length === 1) {
+              const now = Date.now();
+              if (now - lastTapRef.current < 300) {
+                if (scale > 1) resetZoom();
+                else setScale(2);
+                lastTapRef.current = 0;
+                return;
+              }
+              lastTapRef.current = now;
+              if (scale > 1) {
+                panStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY, tx, ty };
+                touchStartX.current = null;
+              } else {
+                touchStartX.current = e.touches[0].clientX;
+              }
+            }
+          }}
           onTouchMove={(e) => {
-            if (touchStartX.current == null) return;
+            if (e.touches.length === 2 && pinchStartDist.current != null) {
+              e.preventDefault();
+              const d = distance(e.touches);
+              const next = Math.max(1, Math.min(5, pinchStartScale.current * (d / pinchStartDist.current)));
+              setScale(next);
+              if (next === 1) { setTx(0); setTy(0); }
+              else { const c = clampTranslate(tx, ty, next); setTx(c.x); setTy(c.y); }
+              return;
+            }
+            if (panStart.current && scale > 1) {
+              e.preventDefault();
+              const dx = e.touches[0].clientX - panStart.current.x;
+              const dy = e.touches[0].clientY - panStart.current.y;
+              const c = clampTranslate(panStart.current.tx + dx, panStart.current.ty + dy, scale);
+              setTx(c.x); setTy(c.y);
+              return;
+            }
+            if (touchStartX.current == null || scale > 1) return;
             setDragDx(e.touches[0].clientX - touchStartX.current);
           }}
-          onTouchEnd={() => {
-            const dx = dragDx;
-            touchStartX.current = null;
-            setDragDx(0);
-            if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+          onTouchEnd={(e) => {
+            if (e.touches.length < 2) pinchStartDist.current = null;
+            if (e.touches.length === 0) {
+              panStart.current = null;
+              if (scale <= 1 && touchStartX.current != null) {
+                const dx = dragDx;
+                touchStartX.current = null;
+                setDragDx(0);
+                if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+              } else {
+                touchStartX.current = null;
+                setDragDx(0);
+              }
+            }
           }}
-          style={{ transform: `translateX(${dragDx}px)`, transition: dragDx === 0 ? "transform 0.2s ease" : "none" }}
+          style={{
+            transform: `translate(${tx}px, ${ty}px) translateX(${dragDx}px) scale(${scale})`,
+            transition: dragDx === 0 && pinchStartDist.current == null && panStart.current == null ? "transform 0.2s ease" : "none",
+            touchAction: "none",
+          }}
           className="max-h-[92vh] max-w-[96vw] w-auto h-auto object-contain select-none [div:fullscreen_&]:max-h-screen [div:fullscreen_&]:max-w-full"
           draggable={false}
         />
