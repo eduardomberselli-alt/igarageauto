@@ -148,9 +148,7 @@ export default function ImovelPublic() {
   const cardVersion = encodeURIComponent(
     property.updatedAt ?? property.publishedAt ?? String(property.preco),
   );
-  // URL "original" registrada no link rastreável — para onde o usuário será
-  // redirecionado depois que o tracking gravar o acesso. Usa a URL amigável.
-  const shareCardUrl = `${friendlyUrl}?v=${cardVersion}`;
+  const shareCardUrl = `https://igarageauto.vercel.app/c/${property.id}?v=${cardVersion}`;
 
   // Open Graph: título com nome + preço, descrição = nome da loja
   const ogTitle = `${property.titulo} • ${formatBRL(property.preco)}`;
@@ -166,11 +164,10 @@ export default function ImovelPublic() {
   };
 
   const handleShare = async () => {
-    // Link de compartilhamento padrão: URL amigável do veículo.
-    let shareUrl = friendlyUrl;
+    // Link de compartilhamento do card do WhatsApp (versionado p/ burlar cache).
+    let shareUrl = shareCardUrl;
 
-    // Tenta gerar link rastreável curto (não bloqueia o share se falhar).
-    // O resultado é uma URL limpa do tipo https://igarageauto.vercel.app/c/<code>
+    // Tenta gerar link rastreável (não bloqueia o share se falhar)
     try {
       const { data, error } = await supabase.functions.invoke("generate-share-link", {
         body: {
@@ -179,14 +176,14 @@ export default function ImovelPublic() {
           original_url: shareCardUrl,
         },
       });
-      if (!error && data?.tracking_code) {
-        shareUrl = `https://igarageauto.vercel.app/c/${data.tracking_code}`;
+      if (!error && data?.tracking_link) {
+        shareUrl = data.tracking_link;
       }
     } catch {
       // segue com a URL amigável
     }
 
-    const shareText = `${property.titulo} — ${formatBRL(property.preco)}\n\n📲 Clique no link abaixo para ver todos os detalhes:\n${shareUrl}`;
+    const shareText = `${property.titulo} — ${formatBRL(property.preco)}\n\n📲 Clique na foto ou no link abaixo para ver todos os detalhes:\n${shareUrl}`;
 
     const shareData = { title: "Confira este veículo", text: shareText, url: shareUrl };
     try {

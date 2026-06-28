@@ -194,7 +194,7 @@ Deno.serve(async (req) => {
     const ua = req.headers.get("user-agent");
     const slug = url.searchParams.get("p");
     const code = url.searchParams.get("code");
-    let imovelId = url.searchParams.get("imovel") ?? url.searchParams.get("c");
+    const imovelId = url.searchParams.get("imovel") ?? url.searchParams.get("c");
     // `route` permite forçar a prévia de uma rota institucional (home/auth)
     // mesmo sem parâmetros específicos. Ex.: /og-preview?route=auth
     const route = (url.searchParams.get("route") ?? "").toLowerCase();
@@ -202,24 +202,6 @@ Deno.serve(async (req) => {
     const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: { persistSession: false },
     });
-
-    // Se `c` veio do novo formato curto (/c/<trackingCode>), resolve o
-    // tracking_code -> vehicle_id antes do bloco de veículo. Tracking codes
-    // são 8 chars alfanuméricos (nanoid); UUIDs têm 36 chars com hífens.
-    if (
-      imovelId &&
-      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(imovelId) &&
-      /^[A-Za-z0-9]{6,16}$/.test(imovelId)
-    ) {
-      const { data: tracked } = await client
-        .from("share_tracking")
-        .select("vehicle_id")
-        .eq("tracking_code", imovelId)
-        .maybeSingle();
-      if (tracked?.vehicle_id) {
-        imovelId = tracked.vehicle_id as string;
-      }
-    }
 
     // Default = prévia institucional (Home / Auth) com a marca Garage.
     let title = "Garage";
