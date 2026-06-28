@@ -9,7 +9,6 @@ function isVehiclePath(pathname: string) {
   if (
     pathname.startsWith("/veiculo/") ||
     pathname.startsWith("/imovel/") ||
-    pathname.startsWith("/c/") ||
     pathname.startsWith("/v/")
   )
     return true;
@@ -22,7 +21,6 @@ function isWhatsAppAllowed(pathname: string) {
   if (
     pathname.startsWith("/veiculo/") ||
     pathname.startsWith("/imovel/") ||
-    pathname.startsWith("/c/") ||
     pathname.startsWith("/v/")
   )
     return true;
