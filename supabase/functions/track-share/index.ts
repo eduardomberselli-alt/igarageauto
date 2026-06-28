@@ -18,10 +18,21 @@ Deno.serve(async (req) => {
 
   const url = new URL(req.url);
   const trackingCode = url.pathname.split("/").filter(Boolean).pop();
-  console.log("[track-share] tracking_code recebido:", trackingCode);
+  const wantsJson =
+    url.searchParams.get("format") === "json" ||
+    (req.headers.get("accept") || "").toLowerCase().includes("application/json");
+  console.log("[track-share] tracking_code recebido:", trackingCode, "json:", wantsJson);
 
   if (!trackingCode || trackingCode === "track-share") {
-    return new Response("Código inválido", { status: 400, headers: corsHeaders });
+    return new Response(
+      wantsJson ? JSON.stringify({ error: "invalid_code" }) : "Código inválido",
+      {
+        status: 400,
+        headers: wantsJson
+          ? { ...corsHeaders, "Content-Type": "application/json" }
+          : corsHeaders,
+      },
+    );
   }
 
   // Usa SERVICE_ROLE para ignorar RLS (acesso público anônimo via browser)
@@ -39,7 +50,15 @@ Deno.serve(async (req) => {
   console.log("[track-share] lookup:", { found: !!link, error });
 
   if (error || !link) {
-    return new Response("Link não encontrado", { status: 404, headers: corsHeaders });
+    return new Response(
+      wantsJson ? JSON.stringify({ error: "not_found" }) : "Link não encontrado",
+      {
+        status: 404,
+        headers: wantsJson
+          ? { ...corsHeaders, "Content-Type": "application/json" }
+          : corsHeaders,
+      },
+    );
   }
 
   const ipRaw =
@@ -58,6 +77,16 @@ Deno.serve(async (req) => {
       ip_hash: ipHash,
     })
     .eq("tracking_code", trackingCode);
+
+  if (wantsJson) {
+    return new Response(
+      JSON.stringify({ original_url: link.original_url }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      },
+    );
+  }
 
   return new Response(null, {
     status: 302,
