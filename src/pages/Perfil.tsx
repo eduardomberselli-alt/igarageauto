@@ -988,6 +988,19 @@ export default function Perfil() {
                   inputMode="url"
                 />
               </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs">Link do Vídeo Institucional</Label>
+                <Input
+                  value={form.videoInstitucionalUrl}
+                  onChange={(e) => update("videoInstitucionalUrl", e.target.value)}
+                  placeholder="https://instagram.com/reel/..."
+                  inputMode="url"
+                />
+                <p className="text-[11px] text-white/50">
+                  Cole aqui o link do Reels do Instagram ou do vídeo de apresentação da sua loja.
+                </p>
+              </div>
             </section>
 
             <Button onClick={handleSave} size="lg" className="w-full mt-2" disabled={busy}>
