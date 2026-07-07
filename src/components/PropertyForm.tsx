@@ -175,6 +175,7 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [watermarkUrl, setWatermarkUrl] = useState<string | null>(null);
+  const [showCornerLogo, setShowCornerLogo] = useState<boolean>(true);
   type OpcionalRow = { id: string; nome: string; isCustom: boolean };
   const [opcionaisDisponiveis, setOpcionaisDisponiveis] = useState<OpcionalRow[]>([]);
   const [addingOpcional, setAddingOpcional] = useState(false);
@@ -365,6 +366,7 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
           maxDimension: 1920,
           watermarkImage: wmImage,
           watermarkText: wmImage ? null : "✨ Garage",
+          showCornerLogo,
         });
       } catch {
         // mantém o original
