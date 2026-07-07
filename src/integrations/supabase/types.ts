@@ -362,6 +362,7 @@ export type Database = {
           brand_primary_color: string
           created_at: string
           especialidades: string[]
+          exibir_logo_foto: boolean
           facebook_url: string | null
           foto_url: string
           frase_chamada: string | null
@@ -388,6 +389,7 @@ export type Database = {
           brand_primary_color?: string
           created_at?: string
           especialidades?: string[]
+          exibir_logo_foto?: boolean
           facebook_url?: string | null
           foto_url?: string
           frase_chamada?: string | null
@@ -414,6 +416,7 @@ export type Database = {
           brand_primary_color?: string
           created_at?: string
           especialidades?: string[]
+          exibir_logo_foto?: boolean
           facebook_url?: string | null
           foto_url?: string
           frase_chamada?: string | null

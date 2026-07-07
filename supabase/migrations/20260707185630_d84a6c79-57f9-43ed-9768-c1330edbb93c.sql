@@ -1,0 +1,1 @@
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS exibir_logo_foto boolean NOT NULL DEFAULT true;
