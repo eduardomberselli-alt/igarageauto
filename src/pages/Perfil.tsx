@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import { useProfile } from "@/hooks/useAppData";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminView } from "@/contexts/AdminViewContext";
