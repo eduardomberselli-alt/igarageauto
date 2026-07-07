@@ -55,6 +55,9 @@ export default function Dashboard() {
 
   const handleGenerate = async (p: Property) => {
     const originalUrl = vehicleUrl(p, profile?.slug);
+    // Safari/iOS bloqueia window.open chamado após await (perde o "user gesture").
+    // Abrimos a aba sincronamente no clique e depois atualizamos a URL.
+    const newTab = window.open("about:blank", "_blank");
     try {
       const { data, error } = await supabase.functions.invoke("generate-share-link", {
         body: { vehicle_id: p.id, original_url: originalUrl },
@@ -65,13 +68,23 @@ export default function Dashboard() {
       toast.success("Link rastreável copiado!", {
         description: "Agora você sabe quantas pessoas abriram.",
       });
-      window.open(trackingLink, "_blank");
+      if (newTab) {
+        newTab.location.href = trackingLink;
+      } else {
+        // Fallback iOS: navega na própria aba se pop-up foi bloqueado
+        window.location.href = trackingLink;
+      }
     } catch (e) {
       // Fallback: copia URL original sem tracking
       await navigator.clipboard.writeText(originalUrl).catch(() => {});
       toast.error("Não foi possível gerar link rastreável", {
         description: "Link normal copiado como alternativa.",
       });
+      if (newTab) {
+        newTab.location.href = originalUrl;
+      } else {
+        window.location.href = originalUrl;
+      }
     }
   };
 
