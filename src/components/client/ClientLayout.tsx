@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ClientStoreProvider, useClientStore } from "@/contexts/ClientStoreContext";
 import { ClientBottomNav } from "./ClientBottomNav";
 import { FloatingWhatsAppButton } from "./FloatingWhatsAppButton";
+import { FloatingInstitutionalVideoButton } from "./FloatingInstitutionalVideoButton";
 
 import { useBrandColors } from "@/hooks/useBrandColors";
 import { useAuth } from "@/hooks/useAuth";
@@ -49,6 +50,7 @@ function ClientShell() {
         </motion.div>
       </AnimatePresence>
       <FloatingWhatsAppButton />
+      <FloatingInstitutionalVideoButton />
       {showBottomNav && <ClientBottomNav />}
     </div>
   );
