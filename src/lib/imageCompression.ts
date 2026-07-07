@@ -16,6 +16,7 @@ export async function compressImage(
     watermarkUrl?: string | null;
     watermarkText?: string | null;
     watermarkImage?: HTMLImageElement | null;
+    showCornerLogo?: boolean;
   } = {},
 ): Promise<File> {
   const maxBytes = opts.maxBytes ?? 5 * 1024 * 1024;

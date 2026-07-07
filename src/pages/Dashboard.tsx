@@ -215,7 +215,7 @@ export default function Dashboard() {
                   <div className="flex gap-2 pt-1">
                     <Button className="flex-1" onClick={() => handleGenerate(p)}>
                       <ExternalLink className="h-4 w-4" />
-                      Landing Page
+                      Página do veículo
                     </Button>
                     <Button
                       variant="outline"

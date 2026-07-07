@@ -71,6 +71,7 @@ export type Profile = {
   logoLojaUrl?: string | null;
   urlCardWhatsapp?: string | null;
   fraseChamada?: string | null;
+  exibirLogoFoto?: boolean;
 };
 
 export const DEFAULT_BRAND_PRIMARY = "#722F37";
