@@ -40,6 +40,7 @@ export default function Dashboard() {
   const [open, setOpen] = useState(false);
   const [toDelete, setToDelete] = useState<Property | null>(null);
   const [filters, setFilters] = useState<Filters>(emptyFilters);
+  const [generatingId, setGeneratingId] = useState<string | null>(null);
 
   const filtered = applyFilters(properties, filters);
 
@@ -54,10 +55,52 @@ export default function Dashboard() {
   }, []);
 
   const handleGenerate = async (p: Property) => {
+    // Debounce: evita cliques repetidos abrindo múltiplas abas no Safari iOS.
+    if (generatingId === p.id) return;
+    setGeneratingId(p.id);
+
     const originalUrl = vehicleUrl(p, profile?.slug);
-    // Safari/iOS bloqueia window.open chamado após await (perde o "user gesture").
-    // Abrimos a aba sincronamente no clique e depois atualizamos a URL.
-    const newTab = window.open("about:blank", "_blank");
+
+    // Safari iOS exige que window.open seja chamado SINCRONAMENTE dentro do
+    // handler de clique (mesmo tick, sem await antes). Também escreve uma
+    // tela de "carregando" para dar feedback em redes lentas.
+    const isStandalone =
+      // iOS PWA instalado
+      (typeof navigator !== "undefined" && (navigator as any).standalone === true) ||
+      (typeof window !== "undefined" &&
+        window.matchMedia?.("(display-mode: standalone)").matches);
+
+    // Em PWA instalado no iOS, window.open costuma ser bloqueado / retornar null.
+    // Nesse caso navegamos na própria aba usando location.href (também dentro do gesto).
+    const newTab = isStandalone ? null : window.open("about:blank", "_blank");
+    if (newTab) {
+      try {
+        newTab.document.write(
+          '<!doctype html><meta charset="utf-8"><title>Abrindo…</title>' +
+            '<style>html,body{height:100%;margin:0;background:#0b0b0b;color:#fff;' +
+            'font-family:-apple-system,system-ui,sans-serif;display:flex;' +
+            'align-items:center;justify-content:center}</style>' +
+            "<div>Abrindo página do veículo…</div>",
+        );
+        newTab.document.close();
+      } catch {
+        /* alguns navegadores bloqueiam document.write em about:blank */
+      }
+    }
+
+    const navigateTo = (url: string) => {
+      if (newTab && !newTab.closed) {
+        try {
+          newTab.location.replace(url);
+          return;
+        } catch {
+          /* fallthrough */
+        }
+      }
+      // Sem aba nova (PWA / pop-up bloqueado): navega na própria aba.
+      window.location.href = url;
+    };
+
     try {
       const { data, error } = await supabase.functions.invoke("generate-share-link", {
         body: { vehicle_id: p.id, original_url: originalUrl },
@@ -68,23 +111,15 @@ export default function Dashboard() {
       toast.success("Link rastreável copiado!", {
         description: "Agora você sabe quantas pessoas abriram.",
       });
-      if (newTab) {
-        newTab.location.href = trackingLink;
-      } else {
-        // Fallback iOS: navega na própria aba se pop-up foi bloqueado
-        window.location.href = trackingLink;
-      }
-    } catch (e) {
-      // Fallback: copia URL original sem tracking
+      navigateTo(trackingLink);
+    } catch {
       await navigator.clipboard.writeText(originalUrl).catch(() => {});
       toast.error("Não foi possível gerar link rastreável", {
         description: "Link normal copiado como alternativa.",
       });
-      if (newTab) {
-        newTab.location.href = originalUrl;
-      } else {
-        window.location.href = originalUrl;
-      }
+      navigateTo(originalUrl);
+    } finally {
+      setGeneratingId(null);
     }
   };
 
@@ -226,9 +261,13 @@ export default function Dashboard() {
                     {p.vendido ? "Vendido" : "Marcar como vendido"}
                   </button>
                   <div className="flex gap-2 pt-1">
-                    <Button className="flex-1" onClick={() => handleGenerate(p)}>
+                    <Button
+                      className="flex-1"
+                      onClick={() => handleGenerate(p)}
+                      disabled={generatingId === p.id}
+                    >
                       <ExternalLink className="h-4 w-4" />
-                      Página do veículo
+                      {generatingId === p.id ? "Abrindo…" : "Página do veículo"}
                     </Button>
                     <Button
                       variant="outline"
