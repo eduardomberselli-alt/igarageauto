@@ -72,6 +72,7 @@ export type Profile = {
   urlCardWhatsapp?: string | null;
   fraseChamada?: string | null;
   exibirLogoFoto?: boolean;
+  videoInstitucionalUrl?: string | null;
 };
 
 export const DEFAULT_BRAND_PRIMARY = "#722F37";

@@ -72,6 +72,7 @@ export default function Perfil() {
     logoLojaUrl: "",
     urlCardWhatsapp: "",
     fraseChamada: "",
+    videoInstitucionalUrl: "",
   });
   const [novaInfo, setNovaInfo] = useState("");
   const [busy, setBusy] = useState(false);
@@ -109,6 +110,7 @@ export default function Perfil() {
         logoLojaUrl: (profile as any).logoLojaUrl ?? "",
         urlCardWhatsapp: (profile as any).urlCardWhatsapp ?? "",
         fraseChamada: (profile as any).fraseChamada ?? "",
+        videoInstitucionalUrl: (profile as any).videoInstitucionalUrl ?? "",
       });
       if (!cardTitulo) setCardTitulo(profile.nome ?? "");
       if (!cardFrase && ((profile as any).fraseChamada ?? "")) setCardFrase((profile as any).fraseChamada ?? "");
@@ -146,6 +148,7 @@ export default function Perfil() {
     logoLojaUrl: form.logoLojaUrl.trim() || null,
     urlCardWhatsapp: form.urlCardWhatsapp.trim() || null,
     fraseChamada: form.fraseChamada.trim() || null,
+    videoInstitucionalUrl: form.videoInstitucionalUrl.trim() || null,
   });
 
   const handleSave = async () => {
@@ -984,6 +987,19 @@ export default function Perfil() {
                   placeholder="https://www.minhaloja.com.br"
                   inputMode="url"
                 />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs">Link do Vídeo Institucional</Label>
+                <Input
+                  value={form.videoInstitucionalUrl}
+                  onChange={(e) => update("videoInstitucionalUrl", e.target.value)}
+                  placeholder="https://instagram.com/reel/..."
+                  inputMode="url"
+                />
+                <p className="text-[11px] text-white/50">
+                  Cole aqui o link do Reels do Instagram ou do vídeo de apresentação da sua loja.
+                </p>
               </div>
             </section>
 

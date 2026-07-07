@@ -379,6 +379,7 @@ export type Database = {
           url_card_whatsapp: string | null
           url_marca_dagua: string | null
           user_id: string
+          video_institucional_url: string | null
           website_url: string | null
           whatsapp: string
           youtube_url: string | null
@@ -406,6 +407,7 @@ export type Database = {
           url_card_whatsapp?: string | null
           url_marca_dagua?: string | null
           user_id: string
+          video_institucional_url?: string | null
           website_url?: string | null
           whatsapp?: string
           youtube_url?: string | null
@@ -433,6 +435,7 @@ export type Database = {
           url_card_whatsapp?: string | null
           url_marca_dagua?: string | null
           user_id?: string
+          video_institucional_url?: string | null
           website_url?: string | null
           whatsapp?: string
           youtube_url?: string | null
