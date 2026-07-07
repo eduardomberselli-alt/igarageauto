@@ -565,6 +565,17 @@ export default function Perfil() {
                 Suba aqui o logo da sua loja (de preferência em formato PNG com fundo transparente) para ser usado na geração da marca d'água das fotos.
               </p>
 
+              <div className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-background/50 p-2.5 text-left">
+                <Switch
+                  id="exibir-logo-foto"
+                  checked={form.exibirLogoFoto}
+                  onCheckedChange={(v) => setForm((p) => ({ ...p, exibirLogoFoto: v }))}
+                />
+                <Label htmlFor="exibir-logo-foto" className="text-[11px] leading-tight cursor-pointer">
+                  Inserir logotipo automaticamente no canto superior esquerdo das fotos
+                </Label>
+              </div>
+
               <div className="my-3 h-px bg-border" />
 
               <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 text-center">
