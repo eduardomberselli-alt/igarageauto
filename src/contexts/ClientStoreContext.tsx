@@ -46,6 +46,7 @@ function mapProfile(prof: any): ClientStore {
     websiteUrl: prof.website_url ?? null,
     brandPrimaryColor: prof.brand_primary_color ?? "#722F37",
     brandAccentColor: prof.brand_accent_color ?? "#D4AF37",
+    videoInstitucionalUrl: prof.video_institucional_url ?? null,
   };
 }
 
