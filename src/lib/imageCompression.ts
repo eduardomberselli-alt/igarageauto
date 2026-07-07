@@ -16,6 +16,7 @@ export async function compressImage(
     watermarkUrl?: string | null;
     watermarkText?: string | null;
     watermarkImage?: HTMLImageElement | null;
+    showCornerLogo?: boolean;
   } = {},
 ): Promise<File> {
   const maxBytes = opts.maxBytes ?? 5 * 1024 * 1024;
@@ -85,6 +86,8 @@ export async function compressImage(
       ctx.shadowOffsetY = 0;
 
       // ---- 2) Logo SECUNDÁRIO (canto superior esquerdo, 100% opacidade, 40px margem) ----
+      const showCornerLogo = opts.showCornerLogo !== false;
+      if (showCornerLogo) {
       const cantoLargura = targetW * 0.18 * 1.5;
       const cantoAltura = (watermarkImg.height * cantoLargura) / watermarkImg.width;
       const padding = 15;
@@ -128,6 +131,7 @@ export async function compressImage(
 
       ctx.globalAlpha = 1.0;
       console.log("LOG: Marca d'água central (mono 20%) + logo canto com glassmorphism aplicadas.");
+      }
     } else if (opts.watermarkText) {
       // Fallback se não tiver imagem
       ctx.shadowColor = "rgba(0, 0, 0, 0.5)";

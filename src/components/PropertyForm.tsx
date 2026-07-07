@@ -175,6 +175,7 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [watermarkUrl, setWatermarkUrl] = useState<string | null>(null);
+  const [showCornerLogo, setShowCornerLogo] = useState<boolean>(true);
   type OpcionalRow = { id: string; nome: string; isCustom: boolean };
   const [opcionaisDisponiveis, setOpcionaisDisponiveis] = useState<OpcionalRow[]>([]);
   const [addingOpcional, setAddingOpcional] = useState(false);
@@ -274,10 +275,11 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
     (async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("url_marca_dagua")
+        .select("url_marca_dagua, exibir_logo_foto")
         .eq("user_id", user.id)
         .maybeSingle();
       if (active) setWatermarkUrl(((data as any)?.url_marca_dagua as string | null) ?? null);
+      if (active) setShowCornerLogo(((data as any)?.exibir_logo_foto as boolean | null) ?? true);
     })();
     return () => {
       active = false;
@@ -364,6 +366,7 @@ export function PropertyForm({ open, onOpenChange, initial, onSave }: Props) {
           maxDimension: 1920,
           watermarkImage: wmImage,
           watermarkText: wmImage ? null : "✨ Garage",
+          showCornerLogo,
         });
       } catch {
         // mantém o original

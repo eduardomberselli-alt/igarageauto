@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import { useProfile } from "@/hooks/useAppData";
 import { useAuth } from "@/hooks/useAuth";
 import { useAdminView } from "@/contexts/AdminViewContext";
@@ -72,6 +73,7 @@ export default function Perfil() {
     logoLojaUrl: "",
     urlCardWhatsapp: "",
     fraseChamada: "",
+    exibirLogoFoto: true as boolean,
   });
   const [novaInfo, setNovaInfo] = useState("");
   const [busy, setBusy] = useState(false);
@@ -109,6 +111,7 @@ export default function Perfil() {
         logoLojaUrl: (profile as any).logoLojaUrl ?? "",
         urlCardWhatsapp: (profile as any).urlCardWhatsapp ?? "",
         fraseChamada: (profile as any).fraseChamada ?? "",
+        exibirLogoFoto: (profile as any).exibirLogoFoto ?? true,
       });
       if (!cardTitulo) setCardTitulo(profile.nome ?? "");
       if (!cardFrase && ((profile as any).fraseChamada ?? "")) setCardFrase((profile as any).fraseChamada ?? "");
@@ -146,6 +149,7 @@ export default function Perfil() {
     logoLojaUrl: form.logoLojaUrl.trim() || null,
     urlCardWhatsapp: form.urlCardWhatsapp.trim() || null,
     fraseChamada: form.fraseChamada.trim() || null,
+    exibirLogoFoto: form.exibirLogoFoto,
   });
 
   const handleSave = async () => {
@@ -561,6 +565,17 @@ export default function Perfil() {
               <p className="mt-2 text-[10px] text-muted-foreground text-center leading-tight">
                 Suba aqui o logo da sua loja (de preferência em formato PNG com fundo transparente) para ser usado na geração da marca d'água das fotos.
               </p>
+
+              <div className="mt-3 flex items-start gap-2 rounded-lg border border-border bg-background/50 p-2.5 text-left">
+                <Switch
+                  id="exibir-logo-foto"
+                  checked={form.exibirLogoFoto}
+                  onCheckedChange={(v) => setForm((p) => ({ ...p, exibirLogoFoto: v }))}
+                />
+                <Label htmlFor="exibir-logo-foto" className="text-[11px] leading-tight cursor-pointer">
+                  Inserir logotipo automaticamente no canto superior esquerdo das fotos
+                </Label>
+              </div>
 
               <div className="my-3 h-px bg-border" />
 
