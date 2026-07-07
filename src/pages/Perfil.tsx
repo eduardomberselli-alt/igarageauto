@@ -72,6 +72,7 @@ export default function Perfil() {
     logoLojaUrl: "",
     urlCardWhatsapp: "",
     fraseChamada: "",
+    videoInstitucionalUrl: "",
   });
   const [novaInfo, setNovaInfo] = useState("");
   const [busy, setBusy] = useState(false);
@@ -109,6 +110,7 @@ export default function Perfil() {
         logoLojaUrl: (profile as any).logoLojaUrl ?? "",
         urlCardWhatsapp: (profile as any).urlCardWhatsapp ?? "",
         fraseChamada: (profile as any).fraseChamada ?? "",
+        videoInstitucionalUrl: (profile as any).videoInstitucionalUrl ?? "",
       });
       if (!cardTitulo) setCardTitulo(profile.nome ?? "");
       if (!cardFrase && ((profile as any).fraseChamada ?? "")) setCardFrase((profile as any).fraseChamada ?? "");
@@ -146,6 +148,7 @@ export default function Perfil() {
     logoLojaUrl: form.logoLojaUrl.trim() || null,
     urlCardWhatsapp: form.urlCardWhatsapp.trim() || null,
     fraseChamada: form.fraseChamada.trim() || null,
+    videoInstitucionalUrl: form.videoInstitucionalUrl.trim() || null,
   });
 
   const handleSave = async () => {
