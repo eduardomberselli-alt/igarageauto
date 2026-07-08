@@ -75,18 +75,29 @@ export default function Metricas() {
   );
 
   const topVeiculos = useMemo(() => {
-    const counts = new Map<string, number>();
+    const agg = new Map<
+      string,
+      { total: number; links: number; unicosSet: Set<string> }
+    >();
     rows.forEach((r) => {
-      if (!r.accessed_at) return;
-      counts.set(r.vehicle_id, (counts.get(r.vehicle_id) ?? 0) + 1);
+      const cur =
+        agg.get(r.vehicle_id) ?? { total: 0, links: 0, unicosSet: new Set<string>() };
+      cur.links += 1;
+      if (r.accessed_at) {
+        cur.total += 1;
+        if (r.ip_hash) cur.unicosSet.add(r.ip_hash);
+      }
+      agg.set(r.vehicle_id, cur);
     });
-    return Array.from(counts.entries())
-      .sort((a, b) => b[1] - a[1])
+    return Array.from(agg.entries())
+      .sort((a, b) => b[1].total - a[1].total)
       .slice(0, 5)
-      .map(([vehicle_id, total]) => ({
+      .map(([vehicle_id, v]) => ({
         vehicle_id,
         titulo: vehicles[vehicle_id]?.titulo ?? "Veículo",
-        total,
+        total: v.total,
+        links: v.links,
+        unicos: v.unicosSet.size,
       }));
   }, [rows, vehicles]);
 
@@ -157,12 +168,25 @@ export default function Metricas() {
             {topVeiculos.map((v, i) => (
               <li
                 key={v.vehicle_id}
-                className="flex items-center justify-between py-2 border-b border-border last:border-0"
+                className="flex items-center justify-between gap-2 py-2 border-b border-border last:border-0"
               >
-                <span className="text-sm font-medium truncate pr-2">
+                <span className="text-sm font-medium truncate pr-2 flex-1">
                   {i + 1}. {v.titulo}
                 </span>
-                <span className="text-sm font-bold text-primary shrink-0">{v.total}</span>
+                <div className="flex items-center gap-3 shrink-0 text-[11px] font-semibold">
+                  <span className="flex flex-col items-end">
+                    <span className="text-muted-foreground uppercase tracking-wider">Links</span>
+                    <span className="text-foreground text-sm">{v.links}</span>
+                  </span>
+                  <span className="flex flex-col items-end">
+                    <span className="text-muted-foreground uppercase tracking-wider">Únicos</span>
+                    <span className="text-foreground text-sm">{v.unicos}</span>
+                  </span>
+                  <span className="flex flex-col items-end">
+                    <span className="text-muted-foreground uppercase tracking-wider">Acessos</span>
+                    <span className="text-primary text-sm">{v.total}</span>
+                  </span>
+                </div>
               </li>
             ))}
           </ul>
