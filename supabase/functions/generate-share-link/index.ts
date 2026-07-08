@@ -16,27 +16,14 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const authHeader = req.headers.get("Authorization");
-    if (!authHeader) {
-      return new Response(JSON.stringify({ error: "Não autenticado" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
+    // Aceita chamadas anônimas (Modo Cliente) e autenticadas (Modo Lojista).
+    // Sempre resolvemos o lojista_id a partir do próprio veículo, usando a
+    // service role — assim o link rastreável é idêntico em ambos os modos.
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-      { global: { headers: { Authorization: authHeader } } },
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      { auth: { persistSession: false } },
     );
-
-    const { data: userData, error: userErr } = await supabase.auth.getUser();
-    if (userErr || !userData.user) {
-      return new Response(JSON.stringify({ error: "Sessão inválida" }), {
-        status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     const body = await req.json().catch(() => ({}));
     const { vehicle_id, original_url } = body as {
@@ -51,10 +38,23 @@ Deno.serve(async (req) => {
       );
     }
 
+    const { data: vehicle, error: vehicleErr } = await supabase
+      .from("properties")
+      .select("owner_id")
+      .eq("id", vehicle_id)
+      .maybeSingle();
+
+    if (vehicleErr || !vehicle?.owner_id) {
+      return new Response(JSON.stringify({ error: "Veículo não encontrado" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const tracking_code = nanoid(8);
 
     const { error } = await supabase.from("share_tracking").insert({
-      lojista_id: userData.user.id,
+      lojista_id: vehicle.owner_id,
       vehicle_id,
       original_url,
       tracking_code,
