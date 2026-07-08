@@ -44,6 +44,14 @@ function redirectTo(location: string): Response {
   });
 }
 
+function isInternalPreview(url: URL): boolean {
+  return (
+    url.searchParams.get("preview") === "1" ||
+    url.searchParams.get("internal_preview") === "1" ||
+    url.searchParams.get("as") === "client"
+  );
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: noCacheHeaders });
@@ -93,6 +101,11 @@ Deno.serve(async (req) => {
   } catch {
     console.error("[track-share] original_url inválida para redirecionamento");
     return new Response("Destino inválido", { status: 400, headers: noCacheHeaders });
+  }
+
+  if (isInternalPreview(url)) {
+    console.log("[track-share] prévia interna detectada; acesso ignorado:", trackingCode);
+    return redirectTo(target);
   }
 
   const now = new Date().toISOString();

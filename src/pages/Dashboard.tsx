@@ -111,7 +111,7 @@ export default function Dashboard() {
       toast.success("Link rastreável copiado!", {
         description: "Agora você sabe quantas pessoas abriram.",
       });
-      navigateTo(trackingLink);
+      navigateTo(`${trackingLink}${trackingLink.includes("?") ? "&" : "?"}preview=1`);
     } catch {
       await navigator.clipboard.writeText(originalUrl).catch(() => {});
       toast.error("Não foi possível gerar link rastreável", {
