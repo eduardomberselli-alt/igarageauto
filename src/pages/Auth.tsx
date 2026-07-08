@@ -135,8 +135,8 @@ export default function Auth() {
           </p>
         </div>
 
-        <Tabs value={tab} onValueChange={(v) => setTab(v as typeof tab)}>
-          <TabsList className="grid w-full grid-cols-2 mb-4">
+        <Tabs value="login">
+          <TabsList className="hidden">
             <TabsTrigger value="login">Entrar</TabsTrigger>
             <TabsTrigger value="signup">Criar minha loja</TabsTrigger>
           </TabsList>
