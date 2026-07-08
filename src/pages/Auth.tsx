@@ -31,7 +31,7 @@ export default function Auth() {
   const params = new URLSearchParams(location.search);
   // Aceita ?invite=XXX (legado) e ?code=XXX (link de convite atual via WhatsApp)
   const initialInvite = (params.get("invite") ?? params.get("code") ?? "").trim();
-  const [tab, setTab] = useState<"login" | "signup">(initialInvite ? "signup" : "login");
+  const [tab] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [nome, setNome] = useState("");
@@ -135,7 +135,7 @@ export default function Auth() {
           </p>
         </div>
 
-        <Tabs value="login">
+        <Tabs value={tab}>
           <TabsList className="hidden">
             <TabsTrigger value="login">Entrar</TabsTrigger>
             <TabsTrigger value="signup">Criar minha loja</TabsTrigger>
