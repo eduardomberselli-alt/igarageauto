@@ -76,29 +76,6 @@ export default function ImovelPublic() {
     return () => clientStoreCtx.setCurrentVehicle(null);
   }, [clientStoreCtx, property, ownerProfile?.slug]);
 
-  // Incrementa contador de visualizações do dia — apenas quando o acesso vem do
-  // link oficial de compartilhamento (track-share adiciona ?ref=share). Ignora
-  // completamente o Modo Prévia (?as=client) e acessos diretos do lojista/admin.
-  useEffect(() => {
-    if (!property?.id) return;
-    const search = new URLSearchParams(window.location.search);
-    if (search.get("as") === "client") return; // modo prévia — nunca conta
-    if (search.get("ref") !== "share") return; // só conta via link oficial
-    if (!isClientMode) return; // trava extra: dono/admin nunca contam
-
-    const dedupeKey = `emly_view_${property.id}`;
-    if (sessionStorage.getItem(dedupeKey)) return;
-    sessionStorage.setItem(dedupeKey, "1");
-
-    const next = ((property as any).viewCountToday ?? (property as any).view_count_today ?? 0) + 1;
-    supabase
-      .from("properties")
-      .update({ view_count_today: next } as never)
-      .eq("id", property.id)
-      .then(() => {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [property?.id, isClientMode]);
-
   // Regera o card do WhatsApp em background quando o lojista abre a prévia
   // e os dados visíveis no card (preço/modelo/ano/cidade/loja) mudaram, ou
   // quando o card ainda não existe.
