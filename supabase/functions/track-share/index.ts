@@ -52,6 +52,15 @@ function isInternalPreview(url: URL): boolean {
   );
 }
 
+// Bots de preview de link (WhatsApp, Facebook, Twitter, Telegram, Slack, etc.)
+// Não devem contabilizar acesso — apenas seguem o redirect para ler OG tags.
+const BOT_UA_REGEX =
+  /whatsapp|facebookexternalhit|facebookcatalog|meta-externalagent|twitterbot|telegrambot|slackbot|linkedinbot|discordbot|skypeuripreview|pinterest|redditbot|embedly|quora link preview|showyoubot|outbrain|vkshare|w3c_validator|bitlybot|googlebot|bingbot|applebot|yandex|duckduckbot|baiduspider|petalbot|semrushbot|ahrefsbot|mj12bot|dotbot|snapchat|viber|line\//i;
+
+function isPreviewBot(userAgent: string): boolean {
+  return BOT_UA_REGEX.test(userAgent);
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: noCacheHeaders });
@@ -110,6 +119,15 @@ Deno.serve(async (req) => {
 
   const now = new Date().toISOString();
   const userAgent = cleanHeader(req.headers.get("user-agent"), "unknown");
+
+  // Robôs de scraping (WhatsApp, Facebook, etc.) fazem GET só para ler OG tags.
+  // Devolvemos um redirect para o destino (que já expõe as tags do veículo) SEM
+  // gravar acesso — evita inflar métricas com prévias automáticas do WhatsApp.
+  if (isPreviewBot(userAgent)) {
+    console.log("[track-share] bot de preview detectado; acesso ignorado:", userAgent);
+    return redirectTo(target);
+  }
+
   const referrer = cleanHeader(req.headers.get("referer"), "direct", 500);
   const clientIp = getClientIp(req);
   const visitorHash = await shaShort(`${clientIp}|${userAgent}`);
