@@ -340,6 +340,7 @@ export function usePublicProperty(id: string | undefined) {
           brandPrimaryColor: (prof as any).brand_primary_color ?? "#722F37",
           brandAccentColor: (prof as any).brand_accent_color ?? "#D4AF37",
           logoLojaUrl: (prof as any).logo_loja_url ?? null,
+          videoInstitucionalUrl: (prof as any).video_institucional_url ?? null,
         });
       }
 
@@ -407,6 +408,7 @@ export function usePublicPropertyBySlug(lojaSlug: string | undefined, vehicleSlu
           websiteUrl: (prof as any).website_url ?? null,
           brandPrimaryColor: (prof as any).brand_primary_color ?? "#722F37",
           brandAccentColor: (prof as any).brand_accent_color ?? "#D4AF37",
+          videoInstitucionalUrl: (prof as any).video_institucional_url ?? null,
         });
         setNotFound(true);
         setLoading(false);
@@ -467,6 +469,7 @@ export function usePublicPropertyBySlug(lojaSlug: string | undefined, vehicleSlu
         brandPrimaryColor: (prof as any).brand_primary_color ?? "#722F37",
         brandAccentColor: (prof as any).brand_accent_color ?? "#D4AF37",
         logoLojaUrl: (prof as any).logo_loja_url ?? null,
+        videoInstitucionalUrl: (prof as any).video_institucional_url ?? null,
       });
       setLoading(false);
     })();
