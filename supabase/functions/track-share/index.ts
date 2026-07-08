@@ -59,8 +59,22 @@ Deno.serve(async (req) => {
     })
     .eq("tracking_code", trackingCode);
 
+  // Anexa marcador ?ref=share para que a landing só contabilize acessos
+  // que vieram do link oficial de compartilhamento (ignora Modo Prévia).
+  let target: string;
+  try {
+    const u = new URL(link.original_url);
+    u.searchParams.set("ref", "share");
+    target = u.toString();
+  } catch {
+    target =
+      link.original_url +
+      (link.original_url.includes("?") ? "&" : "?") +
+      "ref=share";
+  }
+
   return new Response(null, {
     status: 302,
-    headers: { ...corsHeaders, Location: link.original_url },
+    headers: { ...corsHeaders, Location: target },
   });
 });
