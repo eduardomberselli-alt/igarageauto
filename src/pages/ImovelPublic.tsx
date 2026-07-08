@@ -152,10 +152,9 @@ export default function ImovelPublic() {
   };
 
   const handleShare = async () => {
-    // Link de compartilhamento do card do WhatsApp (versionado p/ burlar cache).
-    let shareUrl = shareCardUrl;
-
-    // Tenta gerar link rastreável (não bloqueia o share se falhar)
+    // Sempre exige o link rastreável do Supabase (track-share). Só cai no
+    // fallback do card versionado se a Edge Function realmente falhar.
+    let shareUrl = "";
     try {
       const { data, error } = await supabase.functions.invoke("generate-share-link", {
         body: {
@@ -165,25 +164,28 @@ export default function ImovelPublic() {
         },
       });
       if (!error && data?.tracking_link) {
-        shareUrl = data.tracking_link;
+        shareUrl = data.tracking_link as string;
       }
     } catch {
-      // segue com a URL amigável
+      /* trata abaixo */
     }
+    if (!shareUrl) shareUrl = shareCardUrl;
 
-    const shareText = `${property.titulo} — ${formatBRL(property.preco)}\n\n📲 Clique na foto ou no link abaixo para ver todos os detalhes:\n${shareUrl}`;
+    // Texto limpo, SEM o link embutido — o WhatsApp anexa a URL do campo `url`
+    // uma única vez. Se colocássemos o link no texto E no url, apareceria duas
+    // vezes na mensagem enviada pelo mobile.
+    const shareText = `${property.titulo} — ${formatBRL(property.preco)}\n\n📲 Confira todos os detalhes:`;
 
-    const shareData = { title: "Confira este veículo", text: shareText, url: shareUrl };
     try {
       if (typeof navigator !== "undefined" && typeof navigator.share === "function") {
-        await navigator.share(shareData);
+        await navigator.share({ title: "Confira este veículo", text: shareText, url: shareUrl });
         return;
       }
     } catch {
       // usuário cancelou ou share falhou — cair no fallback
     }
     try {
-      await navigator.clipboard.writeText(shareText);
+      await navigator.clipboard.writeText(`${shareText}\n${shareUrl}`);
       toast({ title: "Link copiado!", description: "Compartilhe com seus clientes." });
     } catch {
       toast({ title: "Não foi possível copiar", description: shareUrl });
