@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { Home, Search, Heart, Store, GraduationCap } from "lucide-react";
+import { Home, Search, Heart, Store } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { useNavStoreSlug } from "@/contexts/ClientStoreContext";
@@ -15,7 +15,6 @@ type Tab = {
 const TABS: Tab[] = [
   { key: "vitrine", label: "Vitrine", icon: Home },
   { key: "buscar", label: "Buscar", icon: Search },
-  { key: "academy", label: "Academy", icon: GraduationCap, global: "/academy" },
   { key: "salvos", label: "Salvos", icon: Heart },
   { key: "sobre", label: "Loja", icon: Store },
 ];
