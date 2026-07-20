@@ -216,7 +216,12 @@ export default function ImovelPublic() {
   if (property.quartos > 0) specs.push({ label: "Itens", value: String(property.quartos) });
 
   return (
-    <div className="app-shell pb-32 bg-background">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <div className="app-shell pb-32 bg-background">
       <SeoTags
         title={ogTitle}
         description={ogDescription}
@@ -585,6 +590,7 @@ export default function ImovelPublic() {
           </button>
         </section>
       )}
-    </div>
+      </div>
+    </motion.div>
   );
 }
