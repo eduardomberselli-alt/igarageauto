@@ -31,14 +31,14 @@ export function FloatingInstitutionalVideoButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Vídeo Institucional da loja"
-      className="fixed z-50 flex items-center gap-2 pl-3 pr-4 h-12 rounded-full bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--accent))] text-white shadow-[0_8px_24px_-6px_rgba(0,0,0,0.6)] hover:scale-105 transition-transform"
+      className="fixed z-50 flex items-center gap-1.5 pl-2.5 pr-3 h-9 rounded-full bg-gradient-to-r from-[hsl(var(--primary))] to-[hsl(var(--accent))] text-white shadow-[0_8px_24px_-6px_rgba(0,0,0,0.6)] hover:scale-105 transition-transform"
       style={{
         bottom: "calc(env(safe-area-inset-bottom, 0px) + 164px)",
         right: "16px",
       }}
     >
-      <PlayCircle className="h-6 w-6" />
-      <span className="text-sm font-semibold whitespace-nowrap">Conheça nossa Loja</span>
+      <PlayCircle className="h-5 w-5" />
+      <span className="text-xs font-semibold whitespace-nowrap">Conheça nossa Loja</span>
     </a>
   );
 }
