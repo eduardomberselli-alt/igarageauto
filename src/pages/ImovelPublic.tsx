@@ -590,7 +590,7 @@ export default function ImovelPublic() {
           </button>
         </section>
       )}
-      </div>
-    </motion.div>
+    </div>
+  </motion.div>
   );
 }
