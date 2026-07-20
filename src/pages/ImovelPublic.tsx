@@ -98,11 +98,7 @@ export default function ImovelPublic() {
   useBrandColors(ownerProfile?.brandPrimaryColor, ownerProfile?.brandAccentColor, { applyTheme: true });
 
   if (loading) {
-    return (
-      <div className="app-shell flex items-center justify-center min-h-screen">
-        <p className="text-sm text-muted-foreground">Carregando…</p>
-      </div>
-    );
+    return <div className="app-shell min-h-screen bg-[#0A0A0A]" />;
   }
 
   if (!property) {
