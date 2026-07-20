@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   ArrowLeft,
   MapPin,
@@ -97,11 +98,7 @@ export default function ImovelPublic() {
   useBrandColors(ownerProfile?.brandPrimaryColor, ownerProfile?.brandAccentColor, { applyTheme: true });
 
   if (loading) {
-    return (
-      <div className="app-shell flex items-center justify-center min-h-screen">
-        <p className="text-sm text-muted-foreground">Carregando…</p>
-      </div>
-    );
+    return <div className="app-shell min-h-screen bg-[#0A0A0A]" />;
   }
 
   if (!property) {
@@ -219,7 +216,12 @@ export default function ImovelPublic() {
   if (property.quartos > 0) specs.push({ label: "Itens", value: String(property.quartos) });
 
   return (
-    <div className="app-shell pb-32 bg-background">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+    >
+      <div className="app-shell pb-32 bg-background">
       <SeoTags
         title={ogTitle}
         description={ogDescription}
@@ -589,5 +591,6 @@ export default function ImovelPublic() {
         </section>
       )}
     </div>
+  </motion.div>
   );
 }
