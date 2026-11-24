@@ -8,6 +8,13 @@
       "when": 1795542348227,
       "tag": "0000_add_patio_preferences_to_profiles",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1795542680192,
+      "tag": "0001_restrict_selected_public_access_policies",
+      "breakpoints": true
     }
   ]
 }
