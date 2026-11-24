@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { MAX_PROPERTY_PHOTOS, type Property } from "@/types";
 import { cn } from "@/lib/utils";
 import { compressImage } from "@/lib/imageCompression";
+import { emptyMeta, META_KEYS, parseMeta, type AutoMeta } from "@/lib/vehicleMeta";
 
 const preloadWatermark = (url: string): Promise<HTMLImageElement | null> =>
   new Promise((resolve) => {
@@ -57,48 +58,6 @@ const COMBUSTIVEIS = ["Flex", "Gasolina", "Diesel", "Elétrico", "Híbrido"] as 
 const CARROCERIAS = ["Hatch", "Sedan", "SUV", "Pickup"] as const;
 
 const OPCIONAL_PREFIX = "opcional:";
-
-type AutoMeta = {
-  marca: string;
-  modelo: string;
-  ano: string;
-  km: string;
-  cambio: string;
-  combustivel: string;
-  carroceria: string;
-  cor: string;
-  video: string;
-};
-
-const emptyMeta: AutoMeta = {
-  marca: "",
-  modelo: "",
-  ano: "",
-  km: "",
-  cambio: "",
-  combustivel: "",
-  carroceria: "",
-  cor: "",
-  video: "",
-};
-
-const META_KEYS: (keyof AutoMeta)[] = [
-  "marca", "modelo", "ano", "km", "cambio", "combustivel", "carroceria", "cor", "video",
-];
-
-function parseMeta(diferenciais: string[]): { meta: AutoMeta; rest: string[] } {
-  const meta: AutoMeta = { ...emptyMeta };
-  const rest: string[] = [];
-  for (const d of diferenciais) {
-    const m = d.match(/^([a-z]+):(.*)$/i);
-    if (m && (META_KEYS as string[]).includes(m[1].toLowerCase())) {
-      meta[m[1].toLowerCase() as keyof AutoMeta] = m[2];
-    } else {
-      rest.push(d);
-    }
-  }
-  return { meta, rest };
-}
 
 function parseOpcionais(rest: string[]): { opcionais: string[]; others: string[] } {
   const opcionais: string[] = [];

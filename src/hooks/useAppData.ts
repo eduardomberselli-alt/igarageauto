@@ -48,6 +48,8 @@ export function useProfile(userId?: string) {
         fraseChamada: (data as any).frase_chamada ?? null,
         exibirLogoFoto: (data as any).exibir_logo_foto ?? true,
         videoInstitucionalUrl: (data as any).video_institucional_url ?? null,
+        patioMapId: (data as any).patio_map_id ?? "carro-certo",
+        patioEnabled: (data as any).patio_enabled ?? true,
       });
     }
     setLoading(false);
@@ -83,6 +85,8 @@ export function useProfile(userId?: string) {
       ...(next.fraseChamada !== undefined ? { frase_chamada: next.fraseChamada } : {}),
       ...(next.exibirLogoFoto !== undefined ? { exibir_logo_foto: next.exibirLogoFoto } : {}),
       ...(next.videoInstitucionalUrl !== undefined ? { video_institucional_url: next.videoInstitucionalUrl } : {}),
+      ...(next.patioMapId !== undefined ? { patio_map_id: next.patioMapId } : {}),
+      ...(next.patioEnabled !== undefined ? { patio_enabled: next.patioEnabled } : {}),
     };
     // Upsert garante que o registro é criado caso o trigger handle_new_user não tenha rodado
     const { data, error } = await supabase
@@ -341,6 +345,8 @@ export function usePublicProperty(id: string | undefined) {
           brandAccentColor: (prof as any).brand_accent_color ?? "#D4AF37",
           logoLojaUrl: (prof as any).logo_loja_url ?? null,
           videoInstitucionalUrl: (prof as any).video_institucional_url ?? null,
+          patioMapId: (prof as any).patio_map_id ?? "carro-certo",
+          patioEnabled: (prof as any).patio_enabled ?? true,
         });
       }
 
@@ -409,6 +415,8 @@ export function usePublicPropertyBySlug(lojaSlug: string | undefined, vehicleSlu
           brandPrimaryColor: (prof as any).brand_primary_color ?? "#722F37",
           brandAccentColor: (prof as any).brand_accent_color ?? "#D4AF37",
           videoInstitucionalUrl: (prof as any).video_institucional_url ?? null,
+          patioMapId: (prof as any).patio_map_id ?? "carro-certo",
+          patioEnabled: (prof as any).patio_enabled ?? true,
         });
         setNotFound(true);
         setLoading(false);
@@ -470,6 +478,8 @@ export function usePublicPropertyBySlug(lojaSlug: string | undefined, vehicleSlu
         brandAccentColor: (prof as any).brand_accent_color ?? "#D4AF37",
         logoLojaUrl: (prof as any).logo_loja_url ?? null,
         videoInstitucionalUrl: (prof as any).video_institucional_url ?? null,
+          patioMapId: (prof as any).patio_map_id ?? "carro-certo",
+          patioEnabled: (prof as any).patio_enabled ?? true,
       });
       setLoading(false);
     })();

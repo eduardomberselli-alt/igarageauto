@@ -73,6 +73,8 @@ export type Profile = {
   fraseChamada?: string | null;
   exibirLogoFoto?: boolean;
   videoInstitucionalUrl?: string | null;
+  patioMapId?: string | null;
+  patioEnabled?: boolean;
 };
 
 export const DEFAULT_BRAND_PRIMARY = "#722F37";

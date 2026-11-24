@@ -47,6 +47,8 @@ function mapProfile(prof: any): ClientStore {
     brandPrimaryColor: prof.brand_primary_color ?? "#722F37",
     brandAccentColor: prof.brand_accent_color ?? "#D4AF37",
     videoInstitucionalUrl: prof.video_institucional_url ?? null,
+    patioMapId: prof.patio_map_id ?? "carro-certo",
+    patioEnabled: prof.patio_enabled ?? true,
   };
 }
 

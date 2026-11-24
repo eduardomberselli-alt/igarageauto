@@ -15,6 +15,8 @@ import { useAdminView } from "@/contexts/AdminViewContext";
 import { supabase } from "@/integrations/supabase/client";
 import { compressImage, generateWatermarkPng } from "@/lib/imageCompression";
 import { formatWhatsAppMask, normalizeWhatsAppBR } from "@/lib/format";
+import { patioMaps } from "@/data/patioMaps";
+import { Switch } from "@/components/ui/switch";
 
 function slugify(s: string) {
   return s
@@ -73,6 +75,8 @@ export default function Perfil() {
     urlCardWhatsapp: "",
     fraseChamada: "",
     videoInstitucionalUrl: "",
+    patioMapId: "carro-certo",
+    patioEnabled: true,
   });
   const [novaInfo, setNovaInfo] = useState("");
   const [busy, setBusy] = useState(false);
@@ -111,6 +115,8 @@ export default function Perfil() {
         urlCardWhatsapp: (profile as any).urlCardWhatsapp ?? "",
         fraseChamada: (profile as any).fraseChamada ?? "",
         videoInstitucionalUrl: (profile as any).videoInstitucionalUrl ?? "",
+        patioMapId: profile.patioMapId ?? "carro-certo",
+        patioEnabled: profile.patioEnabled ?? true,
       });
       if (!cardTitulo) setCardTitulo(profile.nome ?? "");
       if (!cardFrase && ((profile as any).fraseChamada ?? "")) setCardFrase((profile as any).fraseChamada ?? "");
@@ -149,6 +155,8 @@ export default function Perfil() {
     urlCardWhatsapp: form.urlCardWhatsapp.trim() || null,
     fraseChamada: form.fraseChamada.trim() || null,
     videoInstitucionalUrl: form.videoInstitucionalUrl.trim() || null,
+    patioMapId: form.patioMapId,
+    patioEnabled: form.patioEnabled,
   });
 
   const handleSave = async () => {
@@ -738,6 +746,59 @@ export default function Perfil() {
               <p className="text-[10px] text-muted-foreground text-center leading-tight">
                 Este card aparece como preview quando você compartilha o link da sua loja no WhatsApp.
               </p>
+            </div>
+          </section>
+
+          {/* Pátio virtual */}
+          <section className="mb-6 rounded-2xl border border-border bg-card p-4">
+            <div className="mb-3">
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Pátio virtual
+              </h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Escolha o cenário usado para apresentar seus veículos na vitrine.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {patioMaps.map((map) => {
+                const selected = form.patioMapId === map.id;
+                return (
+                  <button
+                    key={map.id}
+                    type="button"
+                    onClick={() => update("patioMapId", map.id)}
+                    aria-pressed={selected}
+                    className={`overflow-hidden rounded-xl border text-left transition-all ${
+                      selected
+                        ? "border-primary ring-2 ring-primary/30"
+                        : "border-border hover:border-primary/50"
+                    }`}
+                  >
+                    <img
+                      src={map.url}
+                      alt={`Miniatura do mapa ${map.nome}`}
+                      className="aspect-square w-full object-cover"
+                      loading="lazy"
+                    />
+                    <span className="block px-3 py-2 text-xs font-semibold">{map.nome}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 flex items-center justify-between gap-4 rounded-xl bg-secondary/60 p-3">
+              <div>
+                <Label htmlFor="patio-enabled" className="text-sm">Mostrar pátio na vitrine</Label>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  Quando desativado, a vitrine abre diretamente na lista.
+                </p>
+              </div>
+              <Switch
+                id="patio-enabled"
+                checked={form.patioEnabled}
+                onCheckedChange={(checked) => update("patioEnabled", checked)}
+              />
             </div>
           </section>
 

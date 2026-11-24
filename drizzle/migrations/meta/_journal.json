@@ -1,0 +1,13 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1795542348227,
+      "tag": "0000_add_patio_preferences_to_profiles",
+      "breakpoints": true
+    }
+  ]
+}

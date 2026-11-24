@@ -53,6 +53,8 @@ export function usePublicPortfolio(slugOrId: string | undefined) {
         urlCardWhatsapp: (prof as any).url_card_whatsapp ?? null,
         logoLojaUrl: (prof as any).logo_loja_url ?? null,
         fraseChamada: (prof as any).frase_chamada ?? null,
+        patioMapId: (prof as any).patio_map_id ?? "carro-certo",
+        patioEnabled: (prof as any).patio_enabled ?? true,
       });
 
       const { data: props } = await supabase

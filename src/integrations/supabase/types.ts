@@ -372,6 +372,8 @@ export type Database = {
           logo_loja_url: string | null
           maps_url: string | null
           nome: string
+          patio_enabled: boolean
+          patio_map_id: string | null
           slug: string | null
           status: string
           tiktok_url: string | null
@@ -400,6 +402,8 @@ export type Database = {
           logo_loja_url?: string | null
           maps_url?: string | null
           nome?: string
+          patio_enabled?: boolean
+          patio_map_id?: string | null
           slug?: string | null
           status?: string
           tiktok_url?: string | null
@@ -428,6 +432,8 @@ export type Database = {
           logo_loja_url?: string | null
           maps_url?: string | null
           nome?: string
+          patio_enabled?: boolean
+          patio_map_id?: string | null
           slug?: string | null
           status?: string
           tiktok_url?: string | null
